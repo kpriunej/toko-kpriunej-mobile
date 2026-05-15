@@ -1,12 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, Text, View, useColorScheme } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -27,19 +19,18 @@ function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+    <View className="flex-1 bg-slate-950 px-6 py-10">
+      <View className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-6">
+        <Text className="text-2xl font-semibold text-white">TOKO KPRI UNEJ</Text>
+        <Text className="mt-2 text-slate-300">
+          Tailwind className sekarang bisa dipakai di React Native.
+        </Text>
+        <Text className="mt-4 rounded-xl bg-slate-800 p-3 text-xs text-slate-300">
+          Safe Area Insets: {JSON.stringify(safeAreaInsets)}
+        </Text>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
