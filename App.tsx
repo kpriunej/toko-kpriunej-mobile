@@ -1,35 +1,54 @@
-import { StatusBar, Text, View, useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StatusBar, useColorScheme, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import LoginScreen from './src/features/auth/screens/LoginScreen';
 import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+  clearAuthSession,
+  getAuthSession,
+} from './src/features/auth/services/authSession';
+import HomeScreen from './src/features/home/screens/HomeScreen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const bootstrapSession = async () => {
+      const currentSession = await getAuthSession();
+
+      if (currentSession?.user?.name) {
+        setUserName(currentSession.user.name);
+      }
+
+      setIsBootstrapping(false);
+    };
+
+    bootstrapSession();
+  }, []);
+
+  const handleLogout = async () => {
+    await clearAuthSession();
+    setUserName(null);
+  };
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor="#fefce8"
+      />
+      {isBootstrapping ? (
+        <View className="flex-1 items-center justify-center bg-amber-50">
+          <ActivityIndicator size="large" color="#047857" />
+        </View>
+      ) : userName ? (
+        <HomeScreen userName={userName} onLogout={handleLogout} />
+      ) : (
+        <LoginScreen onLoginSuccess={payload => setUserName(payload.userName)} />
+      )}
     </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View className="flex-1 bg-slate-950 px-6 py-10">
-      <View className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-6">
-        <Text className="text-2xl font-semibold text-white">TOKO KPRI UNEJ</Text>
-        <Text className="mt-2 text-slate-300">
-          Tailwind className sekarang bisa dipakai di React Native.
-        </Text>
-        <Text className="mt-4 rounded-xl bg-slate-800 p-3 text-xs text-slate-300">
-          Safe Area Insets: {JSON.stringify(safeAreaInsets)}
-        </Text>
-      </View>
-    </View>
   );
 }
 
