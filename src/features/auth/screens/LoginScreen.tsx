@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -76,21 +77,26 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <View className="flex-1 justify-between">
             <View>
               <View className="rounded-[32px] bg-emerald-950 px-6 py-8 shadow-sm">
-                <Text className="text-xs font-semibold uppercase tracking-[3px] text-emerald-200">
-                  Toko KPRI UNEJ
-                </Text>
-                <Text className="mt-3 text-4xl font-bold leading-tight text-white">
-                  Masuk ke akunmu
-                </Text>
-                <Text className="mt-3 text-base leading-6 text-emerald-100">
-                  Kelola belanja koperasi, cek pesanan, dan lanjutkan transaksi dari
-                  satu tempat.
+                <View className="items-center gap-3">
+                  <View className="h-16 w-16 overflow-hidden rounded-2xl bg-white/10 p-2">
+                    <Image
+                      source={require('../../../../assets/icons/logo.jpg')}
+                      className="h-full w-full"
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text className="text-xs font-semibold uppercase tracking-[3px] text-emerald-200">
+                    TOKO ONLINE
+                  </Text>
+                </View>
+                <Text className="mt-6 text-base leading-6 text-center text-emerald-100">
+                  KPRI Universitas Jember
                 </Text>
               </View>
 
               <View className="-mt-6 rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
                 <View>
-                  <Text className="text-sm font-semibold text-stone-800">Login</Text>
+                  <Text className="text-sm font-semibold text-stone-800">User</Text>
                   <TextInput
                     value={loginInput}
                     onChangeText={setLoginInput}
@@ -154,19 +160,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
                 <Pressable className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50">
                   <Text className="text-center text-base font-semibold text-stone-700">
-                    Masuk sebagai tamu
+                    Beranda
                   </Text>
                 </Pressable>
               </View>
-            </View>
-
-            <View className="mt-10 rounded-[28px] border border-amber-200 bg-amber-100/80 p-5">
-              <Text className="text-sm font-semibold uppercase tracking-[2px] text-amber-900">
-                Belum punya akun?
-              </Text>
-              <Text className="mt-2 text-sm leading-6 text-amber-950">
-                Hubungi admin koperasi untuk aktivasi anggota dan akses aplikasi.
-              </Text>
             </View>
           </View>
         </ScrollView>
