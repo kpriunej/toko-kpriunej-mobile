@@ -54,6 +54,9 @@ react {
     autolinkLibrariesWithApp()
 }
 
+// Load values from .env into BuildConfig/resources for react-native-config.
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 
 /**
@@ -86,6 +89,7 @@ android {
         targetSdk = rootProject.ext.targetSdkVersion
         versionCode = 1
         versionName = "1.0"
+        resValue "string", "build_config_package", "com.tokokpriunej"
     }
     signingConfigs {
         debug {

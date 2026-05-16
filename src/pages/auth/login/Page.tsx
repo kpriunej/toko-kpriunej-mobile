@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -12,22 +12,37 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { apiService, apiServicePost } from '../../../services/api.services';
+import { apiUrl } from '../../../utils/helpers';
+import useAuth from '../../../hooks/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { login, me } from '../services/authService';
-import { saveAuthSession } from '../services/authSession';
 
-type LoginScreenProps = {
+type PageProps = {
   onLoginSuccess?: (payload: { token: string; userName: string }) => void;
   onBackToHome?: () => void;
 };
 
-export default function LoginScreen({ onLoginSuccess, onBackToHome }: LoginScreenProps) {
+export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
+  const { user, setUser } = useAuth();
+
   const [loginInput, setLoginInput] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+  
+  const checkAuth = async () => {
+    const token = await AsyncStorage.getItem("token");
+    if (token && user) {
+      onLoginSuccess?.({ token, userName: user.name });
+    }
+  };
 
   const handleLogin = async () => {
     if (!loginInput.trim() || !password.trim()) {
@@ -39,7 +54,7 @@ export default function LoginScreen({ onLoginSuccess, onBackToHome }: LoginScree
       setIsSubmitting(true);
       setErrorMessage('');
 
-      const response = await login({
+      const response = await apiServicePost(apiUrl('/api/auth/login'), {
         login: loginInput.trim(),
         password,
       });
@@ -48,15 +63,17 @@ export default function LoginScreen({ onLoginSuccess, onBackToHome }: LoginScree
         throw new Error('Response login tidak lengkap.');
       }
 
-      const responseMe = await me(response.token);
-
-      await saveAuthSession({
-        token: response.token,
-        user: responseMe,
+      const responseMe = await apiService('get', apiUrl('/api/auth/me'), {
+        headers: {
+          Authorization: `Bearer ${response.token}`,
+        },
       });
 
+      await AsyncStorage.setItem("token", response.token);
+
       Alert.alert('Login berhasil', response.message ?? 'Selamat datang kembali!');
-      onLoginSuccess?.({ token: response.token, userName: responseMe.name });
+      setUser(responseMe.data);
+      onLoginSuccess?.({ token: response.token, userName: responseMe.data.name });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login gagal.';
       setErrorMessage(message);

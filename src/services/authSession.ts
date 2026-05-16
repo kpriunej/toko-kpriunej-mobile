@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { AuthUser } from './authService';
+import type User from '../interfaces/User';
 
 const AUTH_SESSION_KEY = '@tokokpriunej/auth-session';
 
 export type AuthSession = {
   token: string;
-  user: AuthUser;
+  user: User;
 };
 
 export async function saveAuthSession(session: AuthSession) {

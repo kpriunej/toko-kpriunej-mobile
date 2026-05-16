@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,17 +9,24 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { apiUrl, formatCurrency } from '../../utils/helpers';
+import { apiService } from '../../services/api.services';
+import Barang from '../../interfaces/Barang';
+import useAuth from '../../hooks/useAuth';
 
-import { getBarang, type BarangItem } from '../services/barangService';
+const isBarang = (value: unknown): value is Barang => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
-type HomeScreenProps = {
-  userName: string | null;
-  onLogin: () => void;
-  onLogout: () => void;
+  const candidate = value as Partial<Barang>;
+  return typeof candidate.idtab === 'number';
 };
 
-export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenProps) {
-  const [items, setItems] = useState<BarangItem[]>([]);
+export default () => {
+  const { user } = useAuth();
+
+  const [items, setItems] = useState<Barang[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -29,16 +36,6 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loadingMorePageRef = useRef<number | null>(null);
-
-  const currencyFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-      }),
-    [],
-  );
 
   const fetchBarang = useCallback(
     async (
@@ -72,15 +69,28 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
       setLoadMoreError(null);
 
       try {
-        const response = await getBarang(page);
-        const incomingData = response.data ?? [];
+        const response = await apiService("get", apiUrl('/api/barang'), {
+          params: { page },
+        });
+
+        if (response?.status >= 400) {
+          throw new Error(response?.data?.message ?? 'Terjadi kesalahan saat memuat data barang.');
+        }
+
+        const payload = response?.data;
+        const incomingDataRaw = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+        const incomingData = incomingDataRaw.filter(isBarang);
 
         setItems(previousItems => {
           const mergedItems = isLoadMore
             ? [...previousItems, ...incomingData]
             : incomingData;
 
-          const uniqueItems = new Map<number, BarangItem>();
+          const uniqueItems = new Map<number, Barang>();
 
           for (const barang of mergedItems) {
             if (!uniqueItems.has(barang.idtab)) {
@@ -90,12 +100,16 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
 
           return Array.from(uniqueItems.values());
         });
-        setCurrentPage(response.current_page ?? page);
-        setTotalItems(response.total ?? 0);
+        const resolvedCurrentPage = Number(payload?.current_page ?? page);
+        const resolvedTotal = Number(payload?.total ?? incomingData.length);
+        const lastPage = Number(payload?.last_page ?? page);
+
+        setCurrentPage(Number.isNaN(resolvedCurrentPage) ? page : resolvedCurrentPage);
+        setTotalItems(Number.isNaN(resolvedTotal) ? incomingData.length : resolvedTotal);
 
         const nextAvailable =
-          Boolean(response.next_page_url) ||
-          (response.current_page ?? page) < (response.last_page ?? page);
+          Boolean(payload?.next_page_url) ||
+          resolvedCurrentPage < (Number.isNaN(lastPage) ? page : lastPage);
         setHasNextPage(nextAvailable);
       } catch (error) {
         const message =
@@ -140,7 +154,7 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
     fetchBarang(currentPage + 1, { isLoadMore: true });
   }, [currentPage, fetchBarang, hasNextPage, isLoading, isLoadingMore, isRefreshing]);
 
-  const renderCard = ({ item }: { item: BarangItem }) => {
+  const renderCard = ({ item }: { item: Barang }) => {
     const stockValue = item.saldo_stock ?? 0;
     const stockText = stockValue > 0 ? `${stockValue} tersedia` : 'Stok kosong';
     const stockPillClass = stockValue > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
@@ -177,7 +191,7 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
         <View className="mt-4 rounded-xl bg-amber-50 px-3 py-2">
           <Text className="text-xs text-amber-700">Harga Jual</Text>
           <Text className="text-lg font-bold text-amber-900">
-            {currencyFormatter.format(item.hargajual1 ?? 0)}
+            {formatCurrency(item.hargajual1 ?? 0)}
           </Text>
         </View>
       </View>
@@ -188,7 +202,7 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
     <View className="mb-4 rounded-3xl bg-emerald-700 px-5 py-5">
       <View className="flex-row items-start justify-between">
         <View className="flex-1 pr-3">
-          <Text className="text-sm text-emerald-100">Selamat datang, {userName ?? 'Guest'}</Text>
+          <Text className="text-sm text-emerald-100">Selamat datang, {user?.name || 'Guest'}</Text>
           <Text className="mt-1 text-2xl font-bold text-white">Daftar Barang</Text>
         </View>
 
@@ -274,24 +288,6 @@ export default function HomeScreen({ userName, onLogin, onLogout }: HomeScreenPr
             }
           />
         )}
-
-        <View className="absolute bottom-6 left-4 right-4">
-          {userName ? (
-            <Pressable
-              onPress={onLogout}
-              className="rounded-2xl bg-emerald-900 px-6 py-4 active:bg-emerald-950"
-            >
-              <Text className="text-center text-base font-semibold text-white">Logout</Text>
-            </Pressable>
-          ) : (
-            <Pressable
-              onPress={onLogin}
-              className="rounded-2xl bg-amber-600 px-6 py-4 active:bg-amber-700"
-            >
-              <Text className="text-center text-base font-semibold text-white">Login</Text>
-            </Pressable>
-          )}
-        </View>
       </View>
     </SafeAreaView>
   );
