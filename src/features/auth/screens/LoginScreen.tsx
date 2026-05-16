@@ -13,14 +13,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { login } from '../services/authService';
+import { login, me } from '../services/authService';
 import { saveAuthSession } from '../services/authSession';
 
 type LoginScreenProps = {
   onLoginSuccess?: (payload: { token: string; userName: string }) => void;
+  onBackToHome?: () => void;
 };
 
-export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+export default function LoginScreen({ onLoginSuccess, onBackToHome }: LoginScreenProps) {
   const [loginInput, setLoginInput] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
@@ -43,17 +44,19 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         password,
       });
 
-      if (!response.token || !response.user) {
+      if (!response.token) {
         throw new Error('Response login tidak lengkap.');
       }
 
+      const responseMe = await me(response.token);
+
       await saveAuthSession({
         token: response.token,
-        user: response.user,
+        user: responseMe,
       });
 
       Alert.alert('Login berhasil', response.message ?? 'Selamat datang kembali!');
-      onLoginSuccess?.({ token: response.token, userName: response.user.name });
+      onLoginSuccess?.({ token: response.token, userName: responseMe.name });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login gagal.';
       setErrorMessage(message);
@@ -158,7 +161,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   </Text>
                 </Pressable>
 
-                <Pressable className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50">
+                <Pressable
+                  onPress={onBackToHome}
+                  className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50"
+                >
                   <Text className="text-center text-base font-semibold text-stone-700">
                     Beranda
                   </Text>
