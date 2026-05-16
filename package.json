@@ -3,13 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
+    "android": "react-native run-android --active-arch-only",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/react-native-fontawesome": "^1.0.0",
     "@react-native-async-storage/async-storage": "^3.0.2",
     "@react-native/new-app-screen": "0.85.3",
     "nativewind": "^4.2.3",
@@ -17,6 +19,7 @@
     "react-native": "0.85.3",
     "react-native-reanimated": "^4.3.1",
     "react-native-safe-area-context": "^5.7.0",
+    "react-native-svg": "^15.15.5",
     "react-native-vector-icons": "^10.3.0",
     "react-native-worklets": "^0.8.3"
   },
