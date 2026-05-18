@@ -12,7 +12,9 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { apiUrl, formatCurrency } from '../../utils/helpers';
 import { apiService } from '../../services/api.services';
 import Barang from '../../interfaces/Barang';
-import useAuth from '../../hooks/useAuth';
+import ListFooter from '../../components/home/ListFooter';
+import ListEmpty from '../../components/home/ListEmpty';
+import ListHeader from '../../components/home/ListHeader';
 
 const isBarang = (value: unknown): value is Barang => {
   if (!value || typeof value !== 'object') {
@@ -24,11 +26,10 @@ const isBarang = (value: unknown): value is Barang => {
 };
 
 export default () => {
-  const { user } = useAuth();
 
   const [items, setItems] = useState<Barang[]>([]);
+  const [params, setParams] = useState<{ [key: string]: string }>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -70,7 +71,7 @@ export default () => {
 
       try {
         const response = await apiService("get", apiUrl('/api/barang'), {
-          params: { page },
+          params: { ...params, page },
         });
 
         if (response?.status >= 400) {
@@ -101,11 +102,9 @@ export default () => {
           return Array.from(uniqueItems.values());
         });
         const resolvedCurrentPage = Number(payload?.current_page ?? page);
-        const resolvedTotal = Number(payload?.total ?? incomingData.length);
         const lastPage = Number(payload?.last_page ?? page);
 
         setCurrentPage(Number.isNaN(resolvedCurrentPage) ? page : resolvedCurrentPage);
-        setTotalItems(Number.isNaN(resolvedTotal) ? incomingData.length : resolvedTotal);
 
         const nextAvailable =
           Boolean(payload?.next_page_url) ||
@@ -132,7 +131,7 @@ export default () => {
         }
       }
     },
-    [],
+    [params],
   );
 
   useEffect(() => {
@@ -198,64 +197,16 @@ export default () => {
     );
   };
 
-  const listHeader = (
-    <View className="mb-4 rounded-3xl bg-emerald-700 px-5 py-5">
-      <View className="flex-row items-start justify-between">
-        <View className="flex-1 pr-3">
-          <Text className="text-sm text-emerald-100">Selamat datang, {user?.name || 'Guest'}</Text>
-          <Text className="mt-1 text-2xl font-bold text-white">Daftar Barang</Text>
-        </View>
-
-        <Pressable className="h-11 w-11 items-center justify-center rounded-2xl bg-white/20 active:bg-white/30">
-          <FontAwesome5 name="shopping-cart" size={18} color="#ffffff" solid />
-        </Pressable>
-      </View>
-
-      <Text className="mt-2 text-sm text-emerald-100">
-        Halaman {currentPage} • Total {totalItems.toLocaleString('id-ID')} barang
-      </Text>
-    </View>
-  );
-
-  const emptyState = (
-    <View className="mt-10 items-center rounded-2xl border border-dashed border-emerald-200 bg-white px-6 py-8">
-      <Text className="text-base font-semibold text-emerald-900">Belum ada data barang</Text>
-      <Text className="mt-2 text-center text-sm text-emerald-700">
-        Coba tarik layar ke bawah untuk memuat ulang data.
-      </Text>
-    </View>
-  );
-
-  const listFooter = (
-    <View className="pb-3 pt-1">
-      {isLoadingMore ? (
-        <View className="items-center py-3">
-          <ActivityIndicator size="small" color="#047857" />
-          <Text className="mt-2 text-xs text-emerald-700">Memuat halaman berikutnya...</Text>
-        </View>
-      ) : loadMoreError ? (
-        <View className="items-center py-2">
-          <Text className="text-center text-sm text-rose-700">{loadMoreError}</Text>
-          <Pressable
-            onPress={() => fetchBarang(currentPage + 1, { isLoadMore: true })}
-            className="mt-2 rounded-xl bg-emerald-700 px-4 py-2 active:bg-emerald-800"
-          >
-            <Text className="text-sm font-semibold text-white">Coba Lagi</Text>
-          </Pressable>
-        </View>
-      ) : !hasNextPage && items.length > 0 ? (
-        <Text className="text-center text-xs text-emerald-700">Semua data sudah ditampilkan</Text>
-      ) : null}
-    </View>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-lime-50">
       <View className="flex-1 px-4 pt-3">
         {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#047857" />
-            <Text className="mt-3 text-sm text-emerald-800">Memuat data barang...</Text>
+          <View className="flex-col gap-4">
+            <ListHeader params={params} setParams={setParams} />
+            <View className="flex-col items-center justify-center">
+              <ActivityIndicator size="large" color="#047857" />
+              <Text className="mt-4 text-base text-emerald-700">Memuat data barang...</Text>
+            </View>
           </View>
         ) : errorMessage && items.length === 0 ? (
           <View className="flex-1 items-center justify-center rounded-2xl bg-white px-6">
@@ -272,9 +223,18 @@ export default () => {
             data={items}
             keyExtractor={item => item.idtab.toString()}
             renderItem={renderCard}
-            ListHeaderComponent={listHeader}
-            ListEmptyComponent={emptyState}
-            ListFooterComponent={listFooter}
+            ListHeaderComponent={<ListHeader params={params} setParams={setParams} />}
+            ListEmptyComponent={<ListEmpty />}
+            ListFooterComponent={
+              <ListFooter
+                isLoadingMore={isLoadingMore}
+                loadMoreError={loadMoreError}
+                hasNextPage={hasNextPage}
+                items={items}
+                fetchBarang={fetchBarang}
+                currentPage={currentPage}
+              />
+            }
             showsVerticalScrollIndicator={false}
             contentContainerClassName="pb-28"
             onEndReached={handleLoadMore}

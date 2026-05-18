@@ -34,15 +34,15 @@ export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-  
-  const checkAuth = async () => {
-    const token = await AsyncStorage.getItem("token");
-    if (token && user) {
-      onLoginSuccess?.({ token, userName: user.name });
-    }
-  };
+    const initializeAuth = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token && user) {
+        onLoginSuccess?.({ token, userName: user.name });
+      }
+    };
+
+    initializeAuth();
+  }, [onLoginSuccess, user]);
 
   const handleLogin = async () => {
     if (!loginInput.trim() || !password.trim()) {
@@ -140,6 +140,7 @@ export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
                   <TextInput
                     value={password}
                     onChangeText={setPassword}
+                    autoCapitalize="none"
                     secureTextEntry={secureTextEntry}
                     placeholder="Masukkan password"
                     placeholderTextColor="#94a3b8"
