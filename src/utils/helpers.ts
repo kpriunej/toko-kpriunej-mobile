@@ -1,6 +1,5 @@
-import { useMemo } from "react";
 import { Alert } from "react-native";
-import Config from "react-native-config";
+import { API_URL } from "../constants/ApiService";
 
 /**
  * Show an error alert with a given message.
@@ -32,7 +31,7 @@ export const apiUrl = (endpoint: string): string => {
   if (endpoint.startsWith("/")) {
     endpoint = endpoint.substring(1);
   }
-  return `${Config.API_URL}/${endpoint}`;
+  return `${API_URL}/${endpoint}`;
 }
 
 /**
