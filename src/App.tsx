@@ -1,6 +1,6 @@
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import HomePage from './pages/home/Page';
+import MainPage from './pages/Main';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
@@ -14,7 +14,7 @@ function App() {
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
           backgroundColor="#fefce8"
         />
-        <HomePage />
+        <MainPage />
       </SafeAreaProvider>
     </Provider>
   );

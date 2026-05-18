@@ -1,4 +1,5 @@
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import RenderItem from './RenderItem';
 
 interface ListFooterProps {
   isLoadingMore: boolean;
@@ -19,12 +20,7 @@ const ListFooter: React.FC<ListFooterProps> = ({
 }) => (
   <View className="pb-3 pt-1">
     {isLoadingMore ? (
-      <View className="items-center py-3">
-        <ActivityIndicator size="small" color="#047857" />
-        <Text className="mt-2 text-xs text-emerald-700">
-          Memuat halaman berikutnya...
-        </Text>
-      </View>
+      <RenderItem loading />
     ) : loadMoreError ? (
       <View className="items-center py-2">
         <Text className="text-center text-sm text-rose-700">

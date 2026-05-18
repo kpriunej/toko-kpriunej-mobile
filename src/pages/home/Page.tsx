@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   RefreshControl,
   Text,
@@ -14,7 +14,6 @@ import { apiService } from '../../services/api.services';
 import Barang from '../../interfaces/Barang';
 import ListFooter from '../../components/home/ListFooter';
 import ListEmpty from '../../components/home/ListEmpty';
-import ListHeader from '../../components/home/ListHeader';
 import RenderItem from '../../components/home/RenderItem';
 
 const isBarang = (value: unknown): value is Barang => {
@@ -28,7 +27,7 @@ const isBarang = (value: unknown): value is Barang => {
 
 export default () => {
   const [items, setItems] = useState<Barang[]>([]);
-  const [params, setParams] = useState<{ [key: string]: string }>({});
+  const [params] = useState<{ [key: string]: string }>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,16 +166,19 @@ export default () => {
 
   return (
     <SafeAreaView className="flex-1 bg-lime-50">
-      <View className="flex-1 px-4 pt-3">
+      <View className="bg-emerald-700 px-4 py-3 shadow-sm flex-row items-center justify-between">
+        <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
+        <Image
+          source={require('../../../assets/icons/logo.jpg')}
+          className="h-10 w-10 rounded-full bg-white"
+        />
+      </View>
+      <View className="flex-1 px-3 mt-4">
         {isLoading ? (
           <View className="flex-col gap-4">
-            <ListHeader params={params} setParams={setParams} />
-            <View className="flex-col items-center justify-center">
-              <ActivityIndicator size="large" color="#047857" />
-              <Text className="mt-4 text-base text-emerald-700">
-                Memuat data barang...
-              </Text>
-            </View>
+            {[1, 2, 3].map(i => (
+              <RenderItem key={i} loading />
+            ))}
           </View>
         ) : errorMessage && items.length === 0 ? (
           <View className="flex-1 items-center justify-center rounded-2xl bg-white px-6">
@@ -195,9 +197,6 @@ export default () => {
             data={items}
             keyExtractor={item => item.idtab.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
-            ListHeaderComponent={
-              <ListHeader params={params} setParams={setParams} />
-            }
             ListEmptyComponent={<ListEmpty />}
             ListFooterComponent={
               <ListFooter
