@@ -1,3 +1,4 @@
+import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
@@ -5,6 +6,7 @@ import {
   Pressable,
   RefreshControl,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,6 +29,7 @@ const isBarang = (value: unknown): value is Barang => {
 };
 
 export default () => {
+  const [query, setQuery] = useState<string>('');
   const [items, setItems] = useState<PaginatedResponse<Barang>>({ data: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -34,6 +37,16 @@ export default () => {
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loadingMorePageRef = useRef<number | null>(null);
+  const searchDebounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchCancelTokenRef = useRef<CancelTokenSource | null>(null);
+  const currentSearchQueryRef = useRef<string>('');
+
+  const clearSearchDebounce = () => {
+    if (searchDebounceTimeoutRef.current) {
+      clearTimeout(searchDebounceTimeoutRef.current);
+      searchDebounceTimeoutRef.current = null;
+    }
+  };
 
   const fetchBarang = useCallback(
     async (
@@ -41,9 +54,12 @@ export default () => {
       options: {
         isManualRefresh?: boolean;
         isLoadMore?: boolean;
+        q?: string;
+        cancelToken?: CancelTokenSource['token'];
       } = {},
     ) => {
-      const { isManualRefresh = false, isLoadMore = false } = options;
+      const { isManualRefresh = false, isLoadMore = false, q, cancelToken } = options;
+      const searchQuery = q !== undefined ? q : currentSearchQueryRef.current;
 
       if (isLoadMore && loadingMorePageRef.current === page) {
         return;
@@ -68,8 +84,17 @@ export default () => {
 
       try {
         const response = await apiService('get', apiUrl('/api/barang'), {
-          params: { page, per_page: 25 },
+          params: { 
+            page,
+            per_page: 25,
+            q: searchQuery
+          },
+          cancelToken,
         });
+
+        if (response?.canceled) {
+          return;
+        }
 
         if (response?.status >= 400) {
           throw new Error(
@@ -127,8 +152,35 @@ export default () => {
   );
 
   useEffect(() => {
+    if (query === currentSearchQueryRef.current) {
+      return;
+    }
+
+    clearSearchDebounce();
+    searchDebounceTimeoutRef.current = setTimeout(() => {
+      if (searchCancelTokenRef.current) {
+        searchCancelTokenRef.current.cancel('New search started');
+      }
+
+      const source = axios.CancelToken.source();
+      searchCancelTokenRef.current = source;
+      currentSearchQueryRef.current = query;
+      fetchBarang(1, { q: query, cancelToken: source.token });
+    }, 300);
+
+    return clearSearchDebounce;
+  }, [query, fetchBarang]);
+
+  useEffect(() => {
     FontAwesome5.loadFont?.();
-    fetchBarang(1);
+    fetchBarang(1, { q: '' });
+
+    return () => {
+      clearSearchDebounce();
+      if (searchCancelTokenRef.current) {
+        searchCancelTokenRef.current.cancel('Component unmounted');
+      }
+    };
   }, [fetchBarang]);
 
   const handleLoadMore = useCallback(() => {
@@ -142,7 +194,10 @@ export default () => {
       return;
     }
 
-    fetchBarang(Number(items.current_page) + 1, { isLoadMore: true });
+    fetchBarang(Number(items.current_page) + 1, {
+      isLoadMore: true,
+      q: currentSearchQueryRef.current,
+    });
   }, [
     items.current_page,
     fetchBarang,
@@ -154,12 +209,41 @@ export default () => {
 
   return (
     <SafeAreaView className="flex-1 bg-lime-50">
-      <View className="bg-emerald-700 px-4 py-3 shadow-sm flex-row items-center justify-between">
-        <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
-        <Image
-          source={require('../../../assets/icons/logo.jpg')}
-          className="h-10 w-10 rounded-full bg-white"
-        />
+      <View className="bg-emerald-700 px-4 py-3 shadow-sm">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
+          <Image
+            source={require('../../../assets/icons/logo.jpg')}
+            className="h-10 w-10 rounded-full bg-white"
+          />
+        </View>
+        <View className="flex-row items-center gap-2 mt-2 relative">
+          <TextInput
+            className="flex-1 h-10 py-0 rounded-2xl border border-emerald-200 px-4 text-base text-slate-900 bg-white"
+            placeholder="Cari barang favorit kamu..."
+            placeholderTextColor="#6b7280"
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+          />
+          <FontAwesome5
+            name="search"
+            size={18}
+            color="#047857"
+            onPress={() => {
+              clearSearchDebounce();
+              if (searchCancelTokenRef.current) {
+                searchCancelTokenRef.current.cancel('Manual search started');
+              }
+
+              const source = axios.CancelToken.source();
+              searchCancelTokenRef.current = source;
+              currentSearchQueryRef.current = query;
+              fetchBarang(1, { q: query, cancelToken: source.token });
+            }}
+            className="absolute right-5"
+          />
+        </View>
       </View>
       <View className="flex-1 px-3">
         {isLoading ? (

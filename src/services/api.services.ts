@@ -47,6 +47,10 @@ export const apiService = async (method: string, url: string, options: any = {})
     });
     return response;
   } catch (error: any) {
+    if (axios.isCancel(error)) {
+      return { canceled: true };
+    }
+
     if (error.response) {
       return error.response;
     }
