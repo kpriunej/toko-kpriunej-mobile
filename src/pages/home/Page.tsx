@@ -87,7 +87,9 @@ export default () => {
           params: { 
             page,
             per_page: 25,
-            q: searchQuery
+            q: searchQuery,
+            sort_by: "saldo_stock",
+            sort_type: "desc",
           },
           cancelToken,
         });

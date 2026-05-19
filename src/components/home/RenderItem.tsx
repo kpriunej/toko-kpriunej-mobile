@@ -1,6 +1,7 @@
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { formatCurrency } from "../../utils/helpers";
 import Barang from "../../interfaces/Barang";
+import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 interface RenderCardProps {
   item?: Barang;
@@ -60,27 +61,18 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
         </View>
       </View>
 
-      <View className="mt-2 flex-row items-center justify-between">
-        <View>
-          <Text className="text-xs text-emerald-700">Tipe</Text>
-          <Text className="text-sm font-medium text-emerald-900">
-            {item?.type ?? '-'}
+      <View className="flex-row items-end justify-between">
+        <View className="rounded-xl bg-amber-50 px-3 py-2">
+          <Text className="text-xs text-amber-700">Harga Jual</Text>
+          <Text className="text-lg font-bold text-amber-900">
+            {formatCurrency(item?.hargajual1 ?? 0)}/{item?.nama_kemasan ? item.nama_kemasan.substring(3) : '-'}
           </Text>
         </View>
-
         <View>
-          <Text className="text-right text-xs text-emerald-700">Kemasan</Text>
-          <Text className="text-right text-sm font-medium text-emerald-900">
-            {item?.nama_kemasan ?? '-'}
-          </Text>
+          <Pressable className="items-center rounded-xl bg-emerald-700 px-3 py-1 active:bg-emerald-800">
+            <FontAwesome5Icon name="shopping-cart" size={14} color="#fff" />
+          </Pressable>
         </View>
-      </View>
-
-      <View className="mt-4 rounded-xl bg-amber-50 px-3 py-2">
-        <Text className="text-xs text-amber-700">Harga Jual</Text>
-        <Text className="text-lg font-bold text-amber-900">
-          {formatCurrency(item?.hargajual1 ?? 0)}
-        </Text>
       </View>
     </View>
   );
