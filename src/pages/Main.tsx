@@ -1,69 +1,48 @@
-import { useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import CartPage from './cart/Page';
 import HomePage from './home/Page';
 import ProfilePage from './profile/Page';
 import SearchPage from './search/Page';
 
-type TabKey = 'home' | 'search' | 'cart' | 'profile';
+const Tab = createBottomTabNavigator();
 
-const tabItems: Array<{ key: TabKey; label: string; icon: string }> = [
-  { key: 'home', label: 'Home', icon: 'home' },
-  { key: 'search', label: 'Search', icon: 'search' },
-  { key: 'cart', label: 'Cart', icon: 'shopping-cart' },
-  { key: 'profile', label: 'Profile', icon: 'user' },
-];
+const screenOptions = ({ route }: { route: { name: string } }) => ({
+  headerShown: false,
+  tabBarShowLabel: true,
+  tabBarLabelStyle: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  tabBarStyle: {
+    backgroundColor: '#ecfccb',
+    borderTopWidth: 0,
+    elevation: 4,
+    // height: 60,
+  },
+  tabBarActiveTintColor: '#047857',
+  tabBarInactiveTintColor: '#6b7280',
+  tabBarIcon: ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
+    const iconName =
+      route.name === 'Home'
+        ? 'home'
+        : route.name === 'Search'
+        ? 'search'
+        : route.name === 'Cart'
+        ? 'shopping-cart'
+        : 'user';
 
-export default () => {
-  const [selectedTab, setSelectedTab] = useState<TabKey>('home');
+    return <FontAwesome5 name={iconName} size={size} color={color} solid={focused} />;
+  },
+});
 
-  const content = useMemo(() => {
-    switch (selectedTab) {
-      case 'search':
-        return <SearchPage />;
-      case 'cart':
-        return <CartPage />;
-      case 'profile':
-        return <ProfilePage />;
-      default:
-        return <HomePage />;
-    }
-  }, [selectedTab]);
-
+export default function Main() {
   return (
-    <View className="flex-1 bg-lime-50">
-      {content}
-      <View className="absolute bottom-0 left-0 right-0 py-2 shadow-inner">
-        <View className="mx-4 flex-row items-center justify-around rounded-full bg-emerald-50 px-3 py-2">
-          {tabItems.map(tab => {
-            const isActive = tab.key === selectedTab;
-            return (
-              <Pressable
-                key={tab.key}
-                onPress={() => setSelectedTab(tab.key)}
-                className={`items-center px-2 py-1 rounded-lg ${
-                  isActive ? 'bg-emerald-100' : ''
-                }`}
-              >
-                <FontAwesome5
-                  name={tab.icon}
-                  size={18}
-                  color={isActive ? '#047857' : '#6b7280'}
-                  solid={isActive}
-                />
-                <Text
-                  className={`text-xs ${
-                    isActive ? 'text-emerald-700' : 'text-slate-600'
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-    </View>
+    <Tab.Navigator screenOptions={screenOptions}>
+      <Tab.Screen name="Home" component={HomePage} />
+      <Tab.Screen name="Search" component={SearchPage} />
+      <Tab.Screen name="Cart" component={CartPage} />
+      <Tab.Screen name="Profile" component={ProfilePage} />
+    </Tab.Navigator>
   );
-};
+}

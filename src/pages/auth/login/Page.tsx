@@ -16,14 +16,16 @@ import { apiService, apiServicePost } from '../../../services/api.services';
 import { apiUrl } from '../../../utils/helpers';
 import useAuth from '../../../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-
-type PageProps = {
-  onLoginSuccess?: (payload: { token: string; userName: string }) => void;
-  onBackToHome?: () => void;
+type RootStackParamList = {
+  Home: undefined;
+  Login: undefined;
 };
 
-export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
+export default () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
   const { user, setUser } = useAuth();
 
   const [loginInput, setLoginInput] = useState('');
@@ -37,12 +39,12 @@ export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
     const initializeAuth = async () => {
       const token = await AsyncStorage.getItem('token');
       if (token && user) {
-        onLoginSuccess?.({ token, userName: user.name });
+        navigation.replace('Home');
       }
     };
 
     initializeAuth();
-  }, [onLoginSuccess, user]);
+  }, [navigation, user]);
 
   const handleLogin = async () => {
     if (!loginInput.trim() || !password.trim()) {
@@ -59,21 +61,21 @@ export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
         password,
       });
 
-      if (!response.token) {
+      if (!response.data.token) {
         throw new Error('Response login tidak lengkap.');
       }
 
       const responseMe = await apiService('get', apiUrl('/api/auth/me'), {
         headers: {
-          Authorization: `Bearer ${response.token}`,
+          Authorization: `Bearer ${response.data.token}`,
         },
       });
 
-      await AsyncStorage.setItem("token", response.token);
+      await AsyncStorage.setItem('token', response.data.token);
 
-      Alert.alert('Login berhasil', response.message ?? 'Selamat datang kembali!');
-      setUser(responseMe.data);
-      onLoginSuccess?.({ token: response.token, userName: responseMe.data.name });
+      Alert.alert('Login berhasil', response.data.message ?? 'Selamat datang kembali!');
+      setUser(responseMe.data.data);
+      navigation.replace('Home');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login gagal.';
       setErrorMessage(message);
@@ -180,7 +182,7 @@ export default function Page({ onLoginSuccess, onBackToHome }: PageProps) {
                 </Pressable>
 
                 <Pressable
-                  onPress={onBackToHome}
+                  onPress={() => navigation.replace('Home')}
                   className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50"
                 >
                   <Text className="text-center text-base font-semibold text-stone-700">

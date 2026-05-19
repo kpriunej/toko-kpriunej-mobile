@@ -5,6 +5,7 @@ import { apiService } from '../../services/api.services';
 import { apiUrl } from '../../utils/helpers';
 import Barang from '../../interfaces/Barang';
 import RenderItem from '../../components/home/RenderItem';
+import { PaginatedResponse } from '../../interfaces';
 
 const isBarang = (value: unknown): value is Barang => {
   if (!value || typeof value !== 'object') {
@@ -17,12 +18,10 @@ const isBarang = (value: unknown): value is Barang => {
 
 export default () => {
   const [query, setQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Barang[]>([]);
+  const [searchResults, setSearchResults] = useState<PaginatedResponse<Barang>>({ data: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const loadingMorePageRef = useRef<number | null>(null);
@@ -36,7 +35,7 @@ export default () => {
       const { isLoadMore = false } = options;
 
       if (!searchQuery.trim()) {
-        setSearchResults([]);
+        setSearchResults({ data: [] });
         setErrorMessage(null);
         setHasSearched(false);
         return;
@@ -60,7 +59,11 @@ export default () => {
 
       try {
         const response = await apiService('get', apiUrl('/api/barang'), {
-          params: { q: searchQuery.trim(), page },
+          params: { 
+            q: searchQuery.trim(),
+            per_page: 25, 
+            page,
+          },
         });
 
         if (response?.status >= 400) {
@@ -79,7 +82,7 @@ export default () => {
 
         setSearchResults(previousResults => {
           const mergedResults = isLoadMore
-            ? [...previousResults, ...incomingData]
+            ? [...previousResults.data, ...incomingData]
             : incomingData;
 
           const uniqueResults = new Map<number, Barang>();
@@ -90,20 +93,8 @@ export default () => {
             }
           }
 
-          return Array.from(uniqueResults.values());
+          return { ...payload, data: Array.from(uniqueResults.values()) };
         });
-
-        const resolvedCurrentPage = Number(payload?.current_page ?? page);
-        const lastPage = Number(payload?.last_page ?? page);
-
-        setCurrentPage(
-          Number.isNaN(resolvedCurrentPage) ? page : resolvedCurrentPage,
-        );
-
-        const nextAvailable =
-          Boolean(payload?.next_page_url) ||
-          resolvedCurrentPage < (Number.isNaN(lastPage) ? page : lastPage);
-        setHasNextPage(nextAvailable);
 
         if (!isLoadMore) {
           setHasSearched(true);
@@ -136,16 +127,23 @@ export default () => {
       isLoading ||
       isLoadingMore ||
       loadingMorePageRef.current !== null ||
-      !hasNextPage
+      !searchResults.next_page_url
     ) {
       return;
     }
 
-    handleSearch(query, currentPage + 1, { isLoadMore: true });
-  }, [currentPage, handleSearch, hasNextPage, isLoading, isLoadingMore, query]);
+    handleSearch(query, Number(searchResults.current_page) + 1, { isLoadMore: true });
+  }, [
+    searchResults.current_page,
+    handleSearch,
+    searchResults.next_page_url,
+    isLoading,
+    isLoadingMore,
+    query
+  ]);
 
   return (
-    <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-4 pb-28">
+    <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-4">
       <Text className="mb-4 text-2xl font-bold text-emerald-900">Cari Produk</Text>
       <View className="rounded-3xl bg-white px-4 py-4 shadow-sm mb-4">
         <View className="flex-row items-center gap-2">
@@ -173,7 +171,7 @@ export default () => {
               <RenderItem key={i} loading />
             ))}
           </View>
-        ) : errorMessage && searchResults.length === 0 ? (
+        ) : errorMessage && searchResults.data.length === 0 ? (
           <View className="flex-1 items-center justify-center rounded-2xl bg-white px-6">
             <Text className="text-center text-base font-semibold text-rose-700">
               {errorMessage}
@@ -191,7 +189,7 @@ export default () => {
               Ketik kata kunci untuk mencari produk yang kamu inginkan.
             </Text>
           </View>
-        ) : searchResults.length === 0 ? (
+        ) : searchResults.data.length === 0 ? (
           <View className="flex-1 items-center justify-center rounded-2xl bg-white px-6">
             <Text className="text-center text-base font-semibold text-slate-700">
               Tidak ada produk yang cocok dengan pencarian "{query}".
@@ -201,46 +199,46 @@ export default () => {
             </Text>
           </View>
         ) : (
-          <FlatList
-            data={searchResults}
-            keyExtractor={item => item.idtab.toString()}
-            renderItem={({ item }) => <RenderItem item={item} />}
-            showsVerticalScrollIndicator={false}
-            ListHeaderComponent={
-              <Text className="mb-3 text-sm font-semibold text-slate-600">
-                Ditemukan {searchResults.length} produk
-              </Text>
-            }
-            ListFooterComponent={
-              <View className="pb-3 pt-1">
-                {isLoadingMore ? (
-                  <RenderItem loading />
-                ) : loadMoreError ? (
-                  <View className="items-center py-2">
-                    <Text className="text-center text-sm text-rose-700">
-                      {loadMoreError}
-                    </Text>
-                    <Pressable
-                      onPress={() =>
-                        handleSearch(query, currentPage + 1, { isLoadMore: true })
-                      }
-                      className="mt-2 rounded-xl bg-emerald-700 px-4 py-2 active:bg-emerald-800"
-                    >
-                      <Text className="text-sm font-semibold text-white">
-                        Coba Lagi
+          <>
+            <Text className="mb-3 text-sm font-semibold text-slate-600">
+              Ditemukan {searchResults.total} produk
+            </Text>
+            <FlatList
+              data={searchResults.data}
+              keyExtractor={item => item.idtab.toString()}
+              renderItem={({ item }) => <RenderItem item={item} />}
+              showsVerticalScrollIndicator={false}
+              ListFooterComponent={
+                <View className="pb-3 pt-1">
+                  {isLoadingMore ? (
+                    <RenderItem loading />
+                  ) : loadMoreError ? (
+                    <View className="items-center py-2">
+                      <Text className="text-center text-sm text-rose-700">
+                        {loadMoreError}
                       </Text>
-                    </Pressable>
-                  </View>
-                ) : !hasNextPage && searchResults.length > 0 ? (
-                  <Text className="text-center text-xs text-emerald-700">
-                    Semua data sudah ditampilkan
-                  </Text>
-                ) : null}
-              </View>
-            }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.4}
-          />
+                      <Pressable
+                        onPress={() =>
+                          handleSearch(query, Number(searchResults.current_page) + 1, { isLoadMore: true })
+                        }
+                        className="mt-2 rounded-xl bg-emerald-700 px-4 py-2 active:bg-emerald-800"
+                      >
+                        <Text className="text-sm font-semibold text-white">
+                          Coba Lagi
+                        </Text>
+                      </Pressable>
+                    </View>
+                  ) : !searchResults.next_page_url && searchResults.data.length > 0 ? (
+                    <Text className="text-center text-xs text-emerald-700">
+                      Semua data sudah ditampilkan
+                    </Text>
+                  ) : null}
+                </View>
+              }
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.4}
+            />
+          </>
         )}
       </View>
     </SafeAreaView>

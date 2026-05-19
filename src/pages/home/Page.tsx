@@ -15,6 +15,7 @@ import Barang from '../../interfaces/Barang';
 import ListFooter from '../../components/home/ListFooter';
 import ListEmpty from '../../components/home/ListEmpty';
 import RenderItem from '../../components/home/RenderItem';
+import { PaginatedResponse } from '../../interfaces';
 
 const isBarang = (value: unknown): value is Barang => {
   if (!value || typeof value !== 'object') {
@@ -26,10 +27,7 @@ const isBarang = (value: unknown): value is Barang => {
 };
 
 export default () => {
-  const [items, setItems] = useState<Barang[]>([]);
-  const [params] = useState<{ [key: string]: string }>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [items, setItems] = useState<PaginatedResponse<Barang>>({ data: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -70,7 +68,7 @@ export default () => {
 
       try {
         const response = await apiService('get', apiUrl('/api/barang'), {
-          params: { ...params, page },
+          params: { page, per_page: 25 },
         });
 
         if (response?.status >= 400) {
@@ -89,31 +87,21 @@ export default () => {
         const incomingData = incomingDataRaw.filter(isBarang);
 
         setItems(previousItems => {
-          const mergedItems = isLoadMore
-            ? [...previousItems, ...incomingData]
-            : incomingData;
+          const mergedData =
+            page === 1 ? incomingData : [...previousItems.data, ...incomingData];
 
-          const uniqueItems = new Map<number, Barang>();
+          // Remove duplicates based on idtab
+          const uniqueDataMap = new Map<number, Barang>();
+          mergedData.forEach((item: Barang) => {
+            uniqueDataMap.set(item.idtab, item);
+          });
 
-          for (const barang of mergedItems) {
-            if (!uniqueItems.has(barang.idtab)) {
-              uniqueItems.set(barang.idtab, barang);
-            }
-          }
-
-          return Array.from(uniqueItems.values());
+          return {
+            ...payload,
+            data: Array.from(uniqueDataMap.values()),
+          };
         });
-        const resolvedCurrentPage = Number(payload?.current_page ?? page);
-        const lastPage = Number(payload?.last_page ?? page);
 
-        setCurrentPage(
-          Number.isNaN(resolvedCurrentPage) ? page : resolvedCurrentPage,
-        );
-
-        const nextAvailable =
-          Boolean(payload?.next_page_url) ||
-          resolvedCurrentPage < (Number.isNaN(lastPage) ? page : lastPage);
-        setHasNextPage(nextAvailable);
       } catch (error) {
         const message =
           error instanceof Error
@@ -135,7 +123,7 @@ export default () => {
         }
       }
     },
-    [params],
+    [],
   );
 
   useEffect(() => {
@@ -149,16 +137,16 @@ export default () => {
       isRefreshing ||
       isLoadingMore ||
       loadingMorePageRef.current !== null ||
-      !hasNextPage
+      !items.next_page_url
     ) {
       return;
     }
 
-    fetchBarang(currentPage + 1, { isLoadMore: true });
+    fetchBarang(Number(items.current_page) + 1, { isLoadMore: true });
   }, [
-    currentPage,
+    items.current_page,
     fetchBarang,
-    hasNextPage,
+    items.next_page_url,
     isLoading,
     isLoadingMore,
     isRefreshing,
@@ -173,15 +161,15 @@ export default () => {
           className="h-10 w-10 rounded-full bg-white"
         />
       </View>
-      <View className="flex-1 px-3 mt-4">
+      <View className="flex-1 px-3">
         {isLoading ? (
-          <View className="flex-col gap-4">
+          <View className="flex-col gap-4 mb-4">
             {[1, 2, 3].map(i => (
               <RenderItem key={i} loading />
             ))}
           </View>
-        ) : errorMessage && items.length === 0 ? (
-          <View className="flex-1 items-center justify-center rounded-2xl bg-white px-6">
+        ) : errorMessage && items.data.length === 0 ? (
+          <View className="flex-1 items-center justify-center rounded-2xl bg-white px-6 mt-4">
             <Text className="text-center text-base font-semibold text-rose-700">
               {errorMessage}
             </Text>
@@ -194,18 +182,19 @@ export default () => {
           </View>
         ) : (
           <FlatList
-            data={items}
+            data={items.data}
             keyExtractor={item => item.idtab.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
+            ListHeaderComponent={<View className="mt-4" />}
             ListEmptyComponent={<ListEmpty />}
             ListFooterComponent={
               <ListFooter
                 isLoadingMore={isLoadingMore}
                 loadMoreError={loadMoreError}
-                hasNextPage={hasNextPage}
-                items={items}
+                hasNextPage={items.next_page_url !== null}
+                items={items.data}
                 fetchBarang={fetchBarang}
-                currentPage={currentPage}
+                currentPage={Number(items.current_page)}
               />
             }
             showsVerticalScrollIndicator={false}

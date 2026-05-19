@@ -1,31 +1,25 @@
-import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuth from '../../hooks/useAuth';
-import LoginPage from '../auth/login/Page';
 import { clearAuthSession } from '../../services/authSession';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  Home: undefined;
+  Login: undefined;
+};
 
 export default () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Home'>>();
   const { user, handleLogout } = useAuth();
-  const [showLogin, setShowLogin] = useState(false);
   const isLoggedIn = Boolean(user);
-
   const onLogoutPress = async () => {
     await AsyncStorage.removeItem('token');
     await clearAuthSession();
     handleLogout();
-    setShowLogin(false);
   };
-
-  if (showLogin && !isLoggedIn) {
-    return (
-      <LoginPage
-        onLoginSuccess={() => setShowLogin(false)}
-        onBackToHome={() => setShowLogin(false)}
-      />
-    );
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-6 pb-28">
@@ -76,7 +70,9 @@ export default () => {
         </View>
 
         <Pressable
-          onPress={isLoggedIn ? onLogoutPress : () => setShowLogin(true)}
+          onPress={isLoggedIn ? onLogoutPress : () => {
+            navigation.navigate('Login');
+          }}
           className="mt-6 rounded-2xl bg-emerald-700 px-4 py-4 items-center active:bg-emerald-800"
         >
           <Text className="text-base font-bold text-white">
