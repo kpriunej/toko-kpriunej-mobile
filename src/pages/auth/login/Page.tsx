@@ -20,7 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
-  Home: undefined;
+  HomeTabs: undefined;
   Login: undefined;
 };
 
@@ -39,7 +39,7 @@ export default () => {
     const initializeAuth = async () => {
       const token = await AsyncStorage.getItem('token');
       if (token && user) {
-        navigation.replace('Home');
+        navigation.replace('HomeTabs');
       }
     };
 
@@ -75,7 +75,7 @@ export default () => {
 
       Alert.alert('Login berhasil', response.data.message ?? 'Selamat datang kembali!');
       setUser(responseMe.data.data);
-      navigation.replace('Home');
+      navigation.replace('HomeTabs');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login gagal.';
       setErrorMessage(message);
@@ -182,7 +182,7 @@ export default () => {
                 </Pressable>
 
                 <Pressable
-                  onPress={() => navigation.replace('Home')}
+                  onPress={() => navigation.replace('HomeTabs')}
                   className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50"
                 >
                   <Text className="text-center text-base font-semibold text-stone-700">

@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import CartPage from './cart/Page';
-import HomePage from './home/Page';
-import ProfilePage from './profile/Page';
+import CartPage from '../../pages/home/cart/Page';
+import HomePage from '../../pages/home/Page';
+import ProfilePage from '../../pages/home/profile/Page';
 
 const Tab = createBottomTabNavigator();
 
@@ -15,11 +15,8 @@ const screenOptions = ({ route }: { route: { name: string } }) => ({
   tabBarStyle: {
     backgroundColor: '#ecfccb',
     borderTopWidth: 0,
-    elevation: 4,
-    height: 60,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    elevation: 3,
+    height: 50,
   },
   tabBarActiveTintColor: '#047857',
   tabBarInactiveTintColor: '#6b7280',
@@ -35,7 +32,7 @@ const screenOptions = ({ route }: { route: { name: string } }) => ({
   },
 });
 
-export default function Main() {
+export default () => {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Home" component={HomePage} />

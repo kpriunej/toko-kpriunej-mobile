@@ -13,5 +13,6 @@ module.exports = withNativeWind(
 	mergeConfig(getDefaultConfig(__dirname), config),
 	{
 		input: './global.css',
+		forceWriteFileSystem: true,
 	},
 );

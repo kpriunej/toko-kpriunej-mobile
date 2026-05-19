@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import useAuth from '../../hooks/useAuth';
-import { clearAuthSession } from '../../services/authSession';
+import useAuth from '../../../hooks/useAuth';
+import { clearAuthSession } from '../../../services/authSession';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -71,9 +71,9 @@ export default () => {
 
         <Pressable
           onPress={isLoggedIn ? onLogoutPress : () => {
-            navigation.navigate('Login');
+            navigation.replace('Login');
           }}
-          className="mt-6 rounded-2xl bg-emerald-700 px-4 py-4 items-center active:bg-emerald-800"
+          className={`mt-6 rounded-2xl ${isLoggedIn ? 'bg-red-700' : 'bg-emerald-700'} px-4 py-4 items-center active:bg-emerald-800`}
         >
           <Text className="text-base font-bold text-white">
             {isLoggedIn ? 'Logout' : 'Login'}

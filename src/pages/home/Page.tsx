@@ -168,7 +168,7 @@ export default () => {
       searchCancelTokenRef.current = source;
       currentSearchQueryRef.current = query;
       fetchBarang(1, { q: query, cancelToken: source.token });
-    }, 300);
+    }, 500);
 
     return clearSearchDebounce;
   }, [query, fetchBarang]);
@@ -211,7 +211,7 @@ export default () => {
 
   return (
     <SafeAreaView className="flex-1 bg-lime-50">
-      <View className="bg-emerald-700 px-4 py-3 shadow-sm">
+      <View className="bg-emerald-700 px-4 py-3 shadow-sm rounded-b-3xl">
         <View className="flex-row items-center justify-between">
           <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
           <Image
