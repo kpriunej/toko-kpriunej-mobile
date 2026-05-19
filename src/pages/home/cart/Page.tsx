@@ -8,7 +8,6 @@ type RootStackParamList = {
   Login: undefined;
 };
 
-
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'HomeTabs'>>();
   return (
