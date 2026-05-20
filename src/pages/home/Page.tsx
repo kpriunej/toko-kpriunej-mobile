@@ -83,14 +83,17 @@ export default () => {
       setLoadMoreError(null);
 
       try {
+        const params: any = { 
+          page,
+          per_page: 25,
+          sort_by: "saldo_stock",
+          sort_type: "desc",
+        };
+        if (searchQuery) {
+          params['nama_barang:ilike'] = `%${searchQuery}%`;
+        }
         const response = await apiService('get', apiUrl('/api/barang'), {
-          params: { 
-            page,
-            per_page: 25,
-            q: searchQuery,
-            sort_by: "saldo_stock",
-            sort_type: "desc",
-          },
+          params,
           cancelToken,
         });
 
