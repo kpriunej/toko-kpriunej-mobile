@@ -22,34 +22,33 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 type RootStackParamList = {
   HomeTabs: undefined;
   Login: undefined;
-  Registration: undefined;
 };
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
-  const { user, setUser } = useAuth();
 
-  const [loginInput, setLoginInput] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
-  const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [user, setUser] = useState({ 
+    email: '',
+    no_hp: '',
+    name: '',
+    password: '',
+    confirm_password: ''
+  });
+  const [secureTextEntry, setSecureTextEntry] = useState({
+    password: true,
+    confirm_password: true,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (token && user) {
-        navigation.replace('HomeTabs');
-      }
-    };
+  const handleRegistration = async () => {
+    if (!user.name.trim() || !user.email.trim() || !user.password.trim() || !user.confirm_password.trim()) {
+      setErrorMessage('Semua field wajib diisi.');
+      return;
+    }
 
-    initializeAuth();
-  }, [navigation, user]);
-
-  const handleLogin = async () => {
-    if (!loginInput.trim() || !password.trim()) {
-      setErrorMessage('Login dan password wajib diisi.');
+    if (user.password !== user.confirm_password) {
+      setErrorMessage('Password dan konfirmasi password tidak cocok.');
       return;
     }
 
@@ -57,28 +56,19 @@ export default () => {
       setIsSubmitting(true);
       setErrorMessage('');
 
-      const response = await apiServicePost(apiUrl('/api/auth/login'), {
-        login: loginInput.trim(),
-        password,
+      const response = await apiServicePost(apiUrl('/api/auth/register'), {
+        name: user.name,
+        email: user.email,
+        no_hp: user.no_hp,
+        password: user.password,
+        confirm_password: user.confirm_password,
       });
 
-      if (!response.data.token) {
-        throw new Error('Response login tidak lengkap.');
-      }
-
-      const responseMe = await apiService('get', apiUrl('/api/auth/me'), {
-        headers: {
-          Authorization: `Bearer ${response.data.token}`,
-        },
-      });
-
-      await AsyncStorage.setItem('token', response.data.token);
-
-      Alert.alert('Login berhasil', response.data.message ?? 'Selamat datang kembali!');
-      setUser(responseMe.data.data);
-      navigation.replace('HomeTabs');
+      Alert.alert('Sukses', 'Pendaftaran berhasil. Silakan login dengan akun Anda.', [
+        { text: 'OK', onPress: () => navigation.replace('Login') },
+      ]);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login gagal.';
+      const message = error instanceof Error ? error.message : 'Pendaftaran gagal.';
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -119,66 +109,92 @@ export default () => {
 
               <View className="-mt-6 rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
                 <View>
-                  <Text className="text-sm font-semibold text-stone-800">User</Text>
+                  <Text className="text-sm font-semibold text-stone-800">Nama</Text>
                   <TextInput
-                    value={loginInput}
-                    onChangeText={setLoginInput}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    placeholder="Masukkan email atau nomor telepon"
+                    value={user?.name || ''}
+                    onChangeText={(text) => setUser((prev) => ({ ...prev, name: text }))}
+                    keyboardType="default"
+                    autoCapitalize="words"
+                    placeholder="Masukkan nama lengkap"
                     placeholderTextColor="#94a3b8"
                     className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900"
                   />
                 </View>
-
+                <View className="mt-5">
+                  <Text className="text-sm font-semibold text-stone-800">Email</Text>
+                  <TextInput
+                    value={user?.email || ''}
+                    onChangeText={(text) => setUser((prev) => ({ ...prev, email: text }))}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    placeholder="Masukkan email"
+                    placeholderTextColor="#94a3b8"
+                    className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900"
+                  />
+                </View>
+                <View className="mt-5">
+                  <Text className="text-sm font-semibold text-stone-800">Nomor Telepon</Text>
+                  <TextInput
+                    value={user?.no_hp || ''}
+                    onChangeText={(text) => setUser((prev) => ({ ...prev, no_hp: text }))}
+                    keyboardType="phone-pad"
+                    autoCapitalize="none"
+                    placeholder="Masukkan nomor telepon"
+                    placeholderTextColor="#94a3b8"
+                    className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900"
+                  />
+                </View>
                 <View className="mt-5">
                   <View className="flex-row items-center justify-between">
                     <Text className="text-sm font-semibold text-stone-800">Password</Text>
-                    <Pressable onPress={() => setSecureTextEntry(current => !current)}>
+                    <Pressable onPress={() => setSecureTextEntry(current => ({ ...current, password: !current.password }))}>
                       <Text className="text-sm font-semibold text-emerald-700">
-                        {secureTextEntry ? 'Tampilkan' : 'Sembunyikan'}
+                        {secureTextEntry.password ? 'Tampilkan' : 'Sembunyikan'}
                       </Text>
                     </Pressable>
                   </View>
                   <TextInput
-                    value={password}
-                    onChangeText={setPassword}
+                    value={user?.password || ''}
+                    onChangeText={(text) => setUser((prev) => ({ ...prev, password: text }))}
                     autoCapitalize="none"
-                    secureTextEntry={secureTextEntry}
+                    secureTextEntry={secureTextEntry.password}
                     placeholder="Masukkan password"
                     placeholderTextColor="#94a3b8"
                     className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900"
                   />
                 </View>
-
-                <View className="mt-5 flex-row items-center justify-between">
-                  <View className="flex-row items-center gap-3">
-                    <Switch
-                      value={rememberMe}
-                      onValueChange={setRememberMe}
-                      trackColor={{ false: '#d6d3d1', true: '#34d399' }}
-                      thumbColor="#ffffff"
-                    />
-                    <Text className="text-sm text-stone-700">Ingat saya</Text>
+                <View className="mt-5">
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-sm font-semibold text-stone-800">Konfirmasi Password</Text>
+                    <Pressable onPress={() => setSecureTextEntry(current => ({ ...current, confirm_password: !current.confirm_password }))}>
+                      <Text className="text-sm font-semibold text-emerald-700">
+                        {secureTextEntry.confirm_password ? 'Tampilkan' : 'Sembunyikan'}
+                      </Text>
+                    </Pressable>
                   </View>
-                  <Pressable>
-                    <Text className="text-sm font-semibold text-emerald-700">
-                      Lupa password?
-                    </Text>
-                  </Pressable>
+                  <TextInput
+                    value={user?.confirm_password || ''}
+                    onChangeText={(text) => setUser((prev) => ({ ...prev, confirm_password: text }))}
+                    autoCapitalize="none"
+                    secureTextEntry={secureTextEntry.confirm_password}
+                    placeholder="Masukkan konfirmasi password"
+                    placeholderTextColor="#94a3b8"
+                    className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900"
+                  />
                 </View>
+
 
                 {errorMessage ? (
                   <Text className="mt-4 text-sm font-medium text-rose-600">{errorMessage}</Text>
                 ) : null}
 
                 <Pressable
-                  onPress={handleLogin}
+                  onPress={handleRegistration}
                   disabled={isSubmitting}
                   className="mt-8 rounded-2xl bg-emerald-700 px-4 py-4 active:bg-emerald-800 disabled:opacity-60"
                 >
                   <Text className="text-center text-base font-bold text-white">
-                    {isSubmitting ? 'Memproses...' : 'Masuk'}
+                    {isSubmitting ? 'Memproses...' : 'Daftar'}
                   </Text>
                 </Pressable>
 
@@ -194,9 +210,9 @@ export default () => {
                 <View
                   className="mt-5 flex-row items-center justify-center"
                 >
-                  <Pressable onPress={() => navigation.replace('Registration')}>
+                  <Pressable onPress={() => navigation.replace('Login')}>
                     <Text className="text-sm font-semibold text-emerald-700">
-                      Belum Punya Akun?
+                      Sudah Punya Akun?
                     </Text>
                   </Pressable>
                 </View>
