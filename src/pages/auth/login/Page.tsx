@@ -63,7 +63,7 @@ export default () => {
       });
 
       if (!response.data.token) {
-        throw new Error('Response login tidak lengkap.');
+        throw new Error(response.data?.message || 'Response login tidak lengkap.');
       }
 
       const responseMe = await apiService('get', apiUrl('/api/auth/me'), {
