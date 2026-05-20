@@ -1,7 +1,12 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { useState } from 'react';
+import { formatCurrency } from '../../../utils/helpers';
+import CartItem from '../../../interfaces/CartItem';
+import { getCart, updateCartItemQuantity, clearCart } from '../../../services/cartService';
 
 type RootStackParamList = {
   HomeTabs: undefined;
@@ -10,28 +15,157 @@ type RootStackParamList = {
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'HomeTabs'>>();
-  return (
-    <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-6 pb-28">
-      <View className="rounded-3xl bg-white p-6 shadow-sm">
-        <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
-        <Text className="mt-3 text-base text-slate-600">
-          Keranjangmu masih kosong. Yuk tambahkan produk favorit kamu!
-        </Text>
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-        <View className="mt-6 rounded-3xl bg-emerald-50 p-5">
-          <Text className="text-lg font-semibold text-emerald-900">Tips Belanja</Text>
-          <Text className="mt-2 text-sm text-slate-700">
-            Gunakan fitur cari untuk menemukan produk dengan cepat. Kami akan menyimpan
-            favoritmu agar mudah dibeli lagi.
+  useFocusEffect(() => {
+    loadCart();
+  });
+
+  const loadCart = async () => {
+    const data = await getCart();
+    setCart(data);
+  };
+
+  const handleQuantityChange = async (itemId: number, newQuantity: number) => {
+    await updateCartItemQuantity(itemId, newQuantity);
+    await loadCart();
+  };
+
+  const handleCheckout = () => {
+    if (cart.length === 0) {
+      Alert.alert('Keranjang Kosong', 'Tambahkan produk terlebih dahulu.');
+      return;
+    }
+    Alert.alert('Checkout', 'Fitur checkout akan segera tersedia.');
+  };
+
+  const handleClearCart = () => {
+    Alert.alert(
+      'Hapus Semua Item',
+      'Apakah kamu yakin ingin menghapus semua item dari keranjang?',
+      [
+        { text: 'Batal', onPress: () => {}, style: 'cancel' },
+        {
+          text: 'Hapus',
+          onPress: async () => {
+            await clearCart();
+            await loadCart();
+          },
+          style: 'destructive',
+        },
+      ],
+    );
+  };
+
+  const total = cart.reduce((sum, item) => sum + (item.hargajual1 ?? 0) * item.quantity, 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (cart.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-6 pb-28">
+        <View className="rounded-3xl bg-white p-6 shadow-sm">
+          <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
+          <Text className="mt-3 text-base text-slate-600">
+            Keranjangmu masih kosong. Yuk tambahkan produk favorit kamu!
           </Text>
+
+          <View className="mt-6 rounded-3xl bg-emerald-50 p-5">
+            <Text className="text-lg font-semibold text-emerald-900">Tips Belanja</Text>
+            <Text className="mt-2 text-sm text-slate-700">
+              Gunakan fitur cari untuk menemukan produk dengan cepat. Kami akan menyimpan
+              favoritmu agar mudah dibeli lagi.
+            </Text>
+          </View>
+
+          <Pressable 
+            onPress={() => navigation.replace('HomeTabs')} 
+            className="mt-6 rounded-2xl bg-emerald-700 px-5 py-4 items-center active:bg-emerald-800"
+          >
+            <Text className="font-semibold text-white">Jelajah Produk</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-lime-50">
+      <View className="flex-1">
+        <View className="border-b border-emerald-200 bg-white px-4 py-4">
+          <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
+          <Text className="mt-1 text-sm text-slate-600">{totalItems} item</Text>
         </View>
 
-        <Pressable 
-          onPress={() => navigation.replace('HomeTabs')} 
-          className="mt-6 rounded-2xl bg-emerald-700 px-5 py-4 items-center active:bg-emerald-800"
-        >
-          <Text className="font-semibold text-white">Jelajah Produk</Text>
-        </Pressable>
+        <FlatList
+          data={cart}
+          keyExtractor={(item) => item.idtab.toString()}
+          renderItem={({ item }) => (
+            <View className="border-b border-emerald-100 bg-white px-4 py-3">
+              <View className="flex-row justify-between">
+                <View className="flex-1">
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+                    {item.kode_barang}
+                  </Text>
+                  <Text className="mt-1 text-base font-bold text-emerald-950">
+                    {item.nama_barang}
+                  </Text>
+                  <Text className="mt-1 text-sm font-semibold text-amber-900">
+                    {formatCurrency(item.hargajual1 ?? 0)}/{item.nama_kemasan ? item.nama_kemasan.substring(3) : '-'}
+                  </Text>
+                </View>
+
+                <View className="ml-2 items-end">
+                  <Text className="text-lg font-bold text-emerald-900">
+                    {formatCurrency((item.hargajual1 ?? 0) * item.quantity)}
+                  </Text>
+                </View>
+              </View>
+
+              <View className="mt-3 flex-row items-center justify-between rounded-lg bg-gray-100 p-2">
+                <Pressable
+                  onPress={() => handleQuantityChange(item.idtab, item.quantity - 1)}
+                  className="h-8 w-8 items-center justify-center rounded bg-emerald-600 active:bg-emerald-700"
+                >
+                  <FontAwesome5 name="minus" size={12} color="#fff" />
+                </Pressable>
+
+                <Text className="text-sm font-bold text-emerald-900">{item.quantity}</Text>
+
+                <Pressable
+                  onPress={() => handleQuantityChange(item.idtab, item.quantity + 1)}
+                  className="h-8 w-8 items-center justify-center rounded bg-emerald-600 active:bg-emerald-700"
+                >
+                  <FontAwesome5 name="plus" size={12} color="#fff" />
+                </Pressable>
+              </View>
+            </View>
+          )}
+          scrollEnabled
+          className="flex-1 px-0"
+        />
+
+        <View className="border-t border-emerald-200 bg-white px-4 py-4">
+          <View className="mb-3 flex-row justify-between">
+            <Text className="text-lg font-semibold text-slate-700">Total:</Text>
+            <Text className="text-xl font-bold text-emerald-900">{formatCurrency(total)}</Text>
+          </View>
+
+          <View className="flex-row gap-3">
+            <Pressable
+              onPress={handleClearCart}
+              className="flex-1 rounded-xl border border-rose-300 bg-rose-50 py-3 active:bg-rose-100"
+            >
+              <Text className="text-center font-semibold text-rose-700">Hapus Semua</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleCheckout}
+              className="flex-1 rounded-xl bg-emerald-700 py-3 active:bg-emerald-800"
+            >
+              <Text className="text-center font-semibold text-white">Checkout</Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );

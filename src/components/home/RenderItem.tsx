@@ -1,7 +1,8 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, Alert } from "react-native";
 import { formatCurrency } from "../../utils/helpers";
 import Barang from "../../interfaces/Barang";
 import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
+import { addToCart } from "../../services/cartService";
 
 interface RenderCardProps {
   item?: Barang;
@@ -15,6 +16,15 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
     stockValue > 0
       ? 'bg-emerald-100 text-emerald-700'
       : 'bg-rose-100 text-rose-700';
+
+  const handleAddToCart = async () => {
+    if (!item || stockValue <= 0) {
+      Alert.alert('Stok Tidak Tersedia', 'Produk ini tidak memiliki stok.');
+      return;
+    }
+    await addToCart(item, 1);
+    Alert.alert('Berhasil', `${item.nama_barang} ditambahkan ke keranjang.`);
+  };
   if (loading) {
     return (
       <View className="mb-4 animate-pulse rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm shadow-emerald-900/10">
@@ -69,7 +79,11 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
           </Text>
         </View>
         <View>
-          <Pressable className="items-center rounded-xl bg-emerald-700 px-3 py-1 active:bg-emerald-800">
+          <Pressable 
+            className="items-center rounded-xl bg-emerald-700 px-3 py-1 active:bg-emerald-800"
+            onPress={() => handleAddToCart()}
+            disabled={stockValue <= 0}
+          >
             <FontAwesome5Icon name="shopping-cart" size={14} color="#fff" />
           </Pressable>
         </View>
