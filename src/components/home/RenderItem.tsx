@@ -80,7 +80,10 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
         </View>
         <View>
           <Pressable 
-            className="items-center rounded-xl bg-emerald-700 px-3 py-1 active:bg-emerald-800"
+            className={`
+              items-center rounded-xl bg-emerald-700 px-3 py-1 active:bg-emerald-800
+              ${stockValue <= 0 ? 'opacity-50' : ''}
+            `}
             onPress={() => handleAddToCart()}
             disabled={stockValue <= 0}
           >
