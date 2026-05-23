@@ -15,7 +15,7 @@ interface RenderCardProps {
 const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
   if (loading) {
     return (
-      <View className="mb-4 animate-pulse rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10">
+      <View className="mb-3 animate-pulse rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10">
         <View className="mb-2 flex-row items-start justify-between gap-3">
           <View className="flex-1">
             <View className="h-4 w-1/3 rounded bg-gray-300 animate-pulse" />

@@ -1,18 +1,14 @@
-import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
-  Image,
   Pressable,
   RefreshControl,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { apiUrl } from '../../utils/helpers';
 import { apiService } from '../../services/api.services';
-import Barang from '../../interfaces/Barang';
 import ListFooter from '../../components/pesanan/ListFooter';
 import ListEmpty from '../../components/pesanan/ListEmpty';
 import RenderItem from '../../components/pesanan/RenderItem';
@@ -20,6 +16,7 @@ import { PaginatedResponse } from '../../interfaces';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useAuth from '../../hooks/useAuth';
+import Header from '../../components/Header';
 
 const isData = (value: unknown) => {
   if (!value || typeof value !== 'object') {
@@ -41,7 +38,6 @@ export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pesanan'>>();
   const { user } = useAuth();
   
-  const [query, setQuery] = useState<string>('');
   const [items, setItems] = useState<PaginatedResponse<any>>({ data: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -49,16 +45,6 @@ export default () => {
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loadingMorePageRef = useRef<number | null>(null);
-  const searchDebounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchCancelTokenRef = useRef<CancelTokenSource | null>(null);
-  const currentSearchQueryRef = useRef<string>('');
-
-  const clearSearchDebounce = () => {
-    if (searchDebounceTimeoutRef.current) {
-      clearTimeout(searchDebounceTimeoutRef.current);
-      searchDebounceTimeoutRef.current = null;
-    }
-  };
 
   const fetchItem = useCallback(
     async (
@@ -66,17 +52,10 @@ export default () => {
       options: {
         isManualRefresh?: boolean;
         isLoadMore?: boolean;
-        q?: string;
-        cancelToken?: CancelTokenSource['token'];
       } = {},
     ) => {
-      if (!user) {
-        navigation.navigate('Login');
-        return;
-      }
 
-      const { isManualRefresh = false, isLoadMore = false, q, cancelToken } = options;
-      const searchQuery = q !== undefined ? q : currentSearchQueryRef.current;
+      const { isManualRefresh = false, isLoadMore = false } = options;
 
       if (isLoadMore && loadingMorePageRef.current === page) {
         return;
@@ -107,12 +86,8 @@ export default () => {
           sort_type: "desc",
           id_user: user.id
         };
-        if (searchQuery) {
-          params['nama_barang:ilike'] = `%${searchQuery}%`;
-        }
         const response = await apiService('get', apiUrl('/api/transaksi-jual-header'), {
           params,
-          cancelToken,
         });
 
         if (response?.canceled) {
@@ -139,8 +114,8 @@ export default () => {
             page === 1 ? incomingData : [...previousItems.data, ...incomingData];
 
           // Remove duplicates based on id_header
-          const uniqueDataMap = new Map<number, Barang>();
-          mergedData.forEach((item: Barang) => {
+          const uniqueDataMap = new Map<number, any>();
+          mergedData.forEach((item: any) => {
             uniqueDataMap.set(item.id_header, item);
           });
 
@@ -171,40 +146,8 @@ export default () => {
         }
       }
     },
-    [],
+    [navigation, user],
   );
-
-  useEffect(() => {
-    if (query === currentSearchQueryRef.current) {
-      return;
-    }
-
-    clearSearchDebounce();
-    searchDebounceTimeoutRef.current = setTimeout(() => {
-      if (searchCancelTokenRef.current) {
-        searchCancelTokenRef.current.cancel('New search started');
-      }
-
-      const source = axios.CancelToken.source();
-      searchCancelTokenRef.current = source;
-      currentSearchQueryRef.current = query;
-      fetchItem(1, { q: query, cancelToken: source.token });
-    }, 500);
-
-    return clearSearchDebounce;
-  }, [query, fetchItem]);
-
-  useEffect(() => {
-    FontAwesome5.loadFont?.();
-    fetchItem(1, { q: '' });
-
-    return () => {
-      clearSearchDebounce();
-      if (searchCancelTokenRef.current) {
-        searchCancelTokenRef.current.cancel('Component unmounted');
-      }
-    };
-  }, [fetchItem]);
 
   const handleLoadMore = useCallback(() => {
     if (
@@ -219,7 +162,6 @@ export default () => {
 
     fetchItem(Number(items.current_page) + 1, {
       isLoadMore: true,
-      q: currentSearchQueryRef.current,
     });
   }, [
     items.current_page,
@@ -230,20 +172,20 @@ export default () => {
     isRefreshing,
   ]);
 
+  useEffect(() => {
+    if (!user) {
+      navigation.navigate('Login');
+      return;
+    }
+    fetchItem(1);
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
-      <View className="bg-sky-700 px-4 py-3 shadow-sm rounded-b-3xl">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-lg text-center font-bold text-white">Riwayat Pesanan</Text>
-          <Image
-            source={require('../../../assets/icons/logo.png')}
-            className="h-10 w-10 rounded-full bg-white"
-          />
-        </View>
-      </View>
+      <Header title="Riwayat Pesanan" />
       <View className="flex-1 px-3">
         {isLoading ? (
-          <View className="flex-col gap-4 mb-4">
+          <View className="flex-col gap-3 mb-4">
             {[1, 2, 3].map(i => (
               <RenderItem key={i} loading />
             ))}
@@ -265,7 +207,7 @@ export default () => {
             data={items.data}
             keyExtractor={item => item.id_header.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
-            ListHeaderComponent={<View className="mt-4" />}
+            ListHeaderComponent={<View className="mt-3" />}
             ListEmptyComponent={<ListEmpty />}
             ListFooterComponent={
               <ListFooter

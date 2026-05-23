@@ -8,7 +8,7 @@ import PendaftaranScreen from './pages/auth/pendaftaran/Page';
 import MainTabBar from './navigations/main/TabBar';
 import { useEffect } from 'react';
 import SplashScreen from 'react-native-splash-screen';
-
+import AuthSession from './services/AuthSession';
 const Stack = createNativeStackNavigator();
 
 function App() {
@@ -17,34 +17,37 @@ function App() {
     // Kamu juga bisa membungkusnya di dalam fungsi fetch data jika ada API yang harus dipanggil dulu
     SplashScreen.hide();
   }, []);
+
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen 
-              name="Main"
-              component={MainTabBar}
-              options={{
-                headerShown: false
-              }}
-            />
-            <Stack.Screen 
-              name="Login"
-              component={LoginScreen}
-              options={{
-                headerShown: false
-              }}
-            />
-            <Stack.Screen 
-              name="Pendaftaran"
-              component={PendaftaranScreen}
-              options={{
-                headerShown: false
-              }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <AuthSession>
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen 
+                name="Main"
+                component={MainTabBar}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="Login"
+                component={LoginScreen}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="Pendaftaran"
+                component={PendaftaranScreen}
+                options={{
+                  headerShown: false
+                }}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </AuthSession>
       </SafeAreaProvider>
     </Provider>
   );
