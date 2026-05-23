@@ -22,7 +22,7 @@ export default () => {
   return (
     <SafeAreaView className="flex-1 bg-sky-50 px-4 pt-6 pb-28">
       <View className="rounded-3xl bg-white p-6 shadow-sm">
-        <Text className="text-2xl font-bold text-emerald-900">
+        <Text className="text-2xl font-bold text-sky-900">
           {isLoggedIn ? `Halo, ${user?.name}` : 'Halo, Tamu'}
         </Text>
         <Text className="mt-2 text-base text-slate-600">
@@ -34,7 +34,7 @@ export default () => {
         <View className="mt-6 rounded-3xl bg-sky-50 p-5 shadow-sm">
           <View className="flex-row items-center justify-between">
             <Text className="font-semibold text-slate-700">Status Akun</Text>
-            <Text className="text-emerald-800">
+            <Text className="text-sky-800">
               {isLoggedIn ? 'Terautentikasi' : 'Guest'}
             </Text>
           </View>

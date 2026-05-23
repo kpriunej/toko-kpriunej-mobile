@@ -6,7 +6,7 @@ interface ListFooterProps {
   loadMoreError: string | null;
   hasNextPage: boolean;
   items: unknown[];
-  fetchBarang: (page: number, options?: { isManualRefresh?: boolean; isLoadMore?: boolean }) => Promise<void>;
+  fetchItem: (page: number, options?: { isManualRefresh?: boolean; isLoadMore?: boolean }) => Promise<void>;
   currentPage: number;
 }
 
@@ -15,7 +15,7 @@ const ListFooter: React.FC<ListFooterProps> = ({
   loadMoreError,
   hasNextPage,
   items,
-  fetchBarang,
+  fetchItem,
   currentPage 
 }) => (
   <View className="pb-3 pt-1">
@@ -27,7 +27,7 @@ const ListFooter: React.FC<ListFooterProps> = ({
           {loadMoreError}
         </Text>
         <Pressable
-          onPress={() => fetchBarang(currentPage + 1, { isLoadMore: true })}
+          onPress={() => fetchItem(currentPage + 1, { isLoadMore: true })}
           className="mt-2 rounded-xl bg-sky-700 px-4 py-2 active:bg-sky-800"
         >
           <Text className="text-sm font-semibold text-white">Coba Lagi</Text>

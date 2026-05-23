@@ -132,13 +132,13 @@ export default () => {
     return (
       <SafeAreaView className="flex-1 bg-sky-50 px-4 pt-6 pb-28">
         <View className="rounded-3xl bg-white p-6 shadow-sm">
-          <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
+          <Text className="text-2xl font-bold text-sky-900">Keranjang Belanja</Text>
           <Text className="mt-3 text-base text-slate-600">
             Keranjangmu masih kosong. Yuk tambahkan produk favorit kamu!
           </Text>
 
           <View className="mt-6 rounded-3xl bg-sky-50 p-5">
-            <Text className="text-lg font-semibold text-emerald-900">Tips Belanja</Text>
+            <Text className="text-lg font-semibold text-sky-900">Tips Belanja</Text>
             <Text className="mt-2 text-sm text-slate-700">
               Gunakan fitur cari untuk menemukan produk dengan cepat. Kami akan menyimpan
               favoritmu agar mudah dibeli lagi.
@@ -159,8 +159,8 @@ export default () => {
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
       <View className="flex-1">
-        <View className="border-b border-emerald-200 bg-white px-4 py-4">
-          <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
+        <View className="border-b border-sky-200 bg-white px-4 py-4">
+          <Text className="text-2xl font-bold text-sky-900">Keranjang Belanja</Text>
           <Text className="mt-1 text-sm text-slate-600">{totalItems} item</Text>
         </View>
 
@@ -168,13 +168,13 @@ export default () => {
           data={cart}
           keyExtractor={(item) => item.idtab.toString()}
           renderItem={({ item }) => (
-            <View className="border-b border-emerald-100 bg-white px-4 py-3">
+            <View className="border-b border-sky-100 bg-white px-4 py-3">
               <View className="flex-row justify-between">
                 <View className="flex-1">
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-sky-600">
                     {item.kode_barang}
                   </Text>
-                  <Text className="mt-1 text-base font-bold text-emerald-950">
+                  <Text className="mt-1 text-base font-bold text-sky-950">
                     {item.nama_barang}
                   </Text>
                   <Text className="mt-1 text-sm font-semibold text-amber-900">
@@ -183,7 +183,7 @@ export default () => {
                 </View>
 
                 <View className="ml-2 items-end">
-                  <Text className="text-lg font-bold text-emerald-900">
+                  <Text className="text-lg font-bold text-sky-900">
                     {formatCurrency((item.hargajual1 ?? 0) * item.quantity)}
                   </Text>
                 </View>
@@ -197,7 +197,7 @@ export default () => {
                   <FontAwesome5 name="minus" size={12} color="#fff" />
                 </Pressable>
 
-                <Text className="text-sm font-bold text-emerald-900">{item.quantity}</Text>
+                <Text className="text-sm font-bold text-sky-900">{item.quantity}</Text>
 
                 <Pressable
                   onPress={() => handleQuantityChange(item.idtab, item.quantity + 1)}
@@ -212,10 +212,10 @@ export default () => {
           className="flex-1 px-0"
         />
 
-        <View className="border-t border-emerald-200 bg-white px-4 py-4">
+        <View className="border-t border-sky-200 bg-white px-4 py-4">
           <View className="mb-3 flex-row justify-between">
             <Text className="text-lg font-semibold text-slate-700">Total:</Text>
-            <Text className="text-xl font-bold text-emerald-900">{formatCurrency(total)}</Text>
+            <Text className="text-xl font-bold text-sky-900">{formatCurrency(total)}</Text>
           </View>
 
           <View className="flex-row gap-3">

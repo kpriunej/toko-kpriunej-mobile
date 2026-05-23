@@ -1,30 +1,18 @@
-import { Pressable, Text, View, Alert } from "react-native";
+import { Text, View } from "react-native";
 import { formatCurrency } from "../../utils/helpers";
-import Barang from "../../interfaces/Barang";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
-import { addToCart } from "../../services/cartService";
+import moment from "moment";
 
 interface RenderCardProps {
-  item?: Barang;
+  item?: {
+    status: string;
+    grandtotal: number;
+    tanggal_transaksi: string;
+    nomor_faktur: string;
+  };
   loading?: boolean;
 }
 
 const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
-  const stockValue = item?.saldo_stock ?? 0;
-  const stockText = stockValue > 0 ? `${stockValue} tersedia` : 'Stok kosong';
-  const stockPillClass =
-    stockValue > 0
-      ? 'bg-sky-100 text-sky-700'
-      : 'bg-rose-100 text-rose-700';
-
-  const handleAddToCart = async () => {
-    if (!item || stockValue <= 0) {
-      Alert.alert('Stok Tidak Tersedia', 'Produk ini tidak memiliki stok.');
-      return;
-    }
-    await addToCart(item, 1);
-    Alert.alert('Berhasil', `${item.nama_barang} ditambahkan ke keranjang.`);
-  };
   if (loading) {
     return (
       <View className="mb-4 animate-pulse rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10">
@@ -59,36 +47,24 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
       <View className="mb-2 flex-row items-start justify-between gap-3">
         <View className="flex-1">
           <Text className="text-xs font-semibold uppercase tracking-wider text-sky-600">
-            {item?.kode_barang}
+            {moment(item?.tanggal_transaksi).format('DD MMMM YYYY')}
           </Text>
           <Text className="mt-1 text-lg font-bold text-sky-950">
-            {item?.nama_barang}
+            #INV-{item?.nomor_faktur}
           </Text>
         </View>
 
-        <View className={`rounded-xl px-3 py-1 ${stockPillClass}`}>
-          <Text className="text-xs font-semibold">{stockText}</Text>
+        <View className={`rounded-xl px-3 py-1 bg-sky-100 text-sky-700`}>
+          <Text className="text-xs font-semibold">{item?.status}</Text>
         </View>
       </View>
 
       <View className="flex-row items-end justify-between">
         <View className="rounded-xl bg-sky-50 px-3 py-2">
-          <Text className="text-xs text-amber-700">Harga Jual</Text>
+          <Text className="text-xs text-amber-700">Total Pembayaran</Text>
           <Text className="text-lg font-bold text-amber-900">
-            {formatCurrency(item?.hargajual1 ?? 0)}/{item?.nama_kemasan ? item.nama_kemasan.substring(3) : '-'}
+            {formatCurrency(item?.grandtotal ?? 0)}
           </Text>
-        </View>
-        <View>
-          <Pressable 
-            className={`
-              items-center rounded-xl bg-sky-700 px-3 py-1 active:bg-sky-800
-              ${stockValue <= 0 ? 'opacity-50' : ''}
-            `}
-            onPress={() => handleAddToCart()}
-            disabled={stockValue <= 0}
-          >
-            <FontAwesome5Icon name="shopping-cart" size={14} color="#fff" />
-          </Pressable>
         </View>
       </View>
     </View>
