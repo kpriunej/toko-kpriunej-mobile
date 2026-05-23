@@ -6,7 +6,7 @@ export default () => {
       <View className="items-center gap-3">
         <View className="h-16 w-16 overflow-hidden rounded-2xl bg-white/10 p-2">
           <Image
-            source={require('../../../assets/icons/logo.jpg')}
+            source={require('../../../assets/icons/logo.png')}
             className="h-full w-full"
             resizeMode="contain"
           />

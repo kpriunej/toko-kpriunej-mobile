@@ -7,8 +7,8 @@ import { useState } from 'react';
 import { apiUrl, formatCurrency } from '../../utils/helpers';
 import CartItem from '../../interfaces/CartItem';
 import { getCart, updateCartItemQuantity, clearCart } from '../../services/cartService';
-import useAuth from '../../hooks/useAuth';
 import { apiService } from '../../services/api.services';
+import useAuth from '../../hooks/useAuth';
 
 type RootStackParamList = {
   Keranjang: undefined;
@@ -20,8 +20,12 @@ type RootStackParamList = {
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Keranjang'>>();
   const { user } = useAuth();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const total = cart.reduce((sum, item) => sum + (item.hargajual1 ?? 0) * item.quantity, 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useFocusEffect(() => {
     loadCart();
@@ -38,36 +42,72 @@ export default () => {
   };
 
   const handleCheckout = () => {
-    Alert.alert(
-      'Konfirmasi Pembayaran',
-      'Apakah Anda yakin ingin melakukan pembayaran?',
-      [
-        {
-          text: 'Tidak',
-          style: 'cancel',
-        },
-        {
-          text: 'Ya',
-          onPress: async () => {
-            setIsLoading(true);
-            const response = await apiService('POST', apiUrl('/api/pembayaran'), {
-              data: {
-                total: total,
-                user_id: user?.id,
-              },
-            });
-            if (response.status === 200) {
-              Alert.alert('Pembayaran Berhasil', response.data.message, [
-                { text: 'OK', onPress: () => navigation.replace('Main') },
-              ])
-            } else {
-              Alert.alert('Error', response.data?.message || 'Terjadi kesalahan saat melakukan pembayaran. Silakan coba lagi.');
-            }
-            setIsLoading(false);
+    if (user) {
+      Alert.alert(
+        'Konfirmasi Pembayaran',
+        'Apakah Anda yakin ingin melakukan pembayaran?',
+        [
+          {
+            text: 'Tidak',
+            style: 'cancel',
           },
-        },
-      ],
-    );
+          {
+            text: 'Ya',
+            onPress: async () => {
+              setIsLoading(true);
+              const response = await apiService('POST', apiUrl('/api/transaksi-jual-header'), {
+                data: {
+                  subtotal: total,
+                  grandtotal: total,
+                },
+              });
+              if (response.status === 200) {
+                const uploadPromises = [];
+                for (const item of cart) {
+                  uploadPromises.push(
+                    apiService('POST', apiUrl('/api/transaksi-jual-detail'), {
+                      data: {
+                        nomor_faktur: response.data.data.nomor_faktur,
+                        tanggal_faktur: response.data.data.tanggal_transaksi,
+                        tanggal_jthtempo: response.data.data.tanggal_jthtempo,
+                        kode_barang: item.kode_barang,
+                        nama_barang: item.nama_barang,
+                        quantity: item.quantity,
+                        harga: Number(item.hargajual1),
+                        jumlah: Number(item.hargajual1) * item.quantity,
+                        total: Number(item.hargajual1) * item.quantity,
+                        kode_pelanggan: response.data.data.kode_pelanggan.toString(),
+                        nama_pelanggan: response.data.data.nama_pelanggan,
+                        id_user: response.data.data.id_user,
+                        tanggal_transaksi: response.data.data.tanggal_transaksi
+                      },
+                    }),
+                  );
+                }
+                const uploadResults = await Promise.all(uploadPromises);
+  
+                if (uploadResults.some((result) => result.status >= 400)) {
+                  Alert.alert('Error', 'Terjadi kesalahan saat melakukan pembayaran. Silakan coba lagi.');
+                  setIsLoading(false);
+                  return;
+                }
+
+                await clearCart();
+  
+                Alert.alert('Alamdulillah', 'Pembayaran berhasil', [
+                  { text: 'OK', onPress: () => navigation.replace('Main') },
+                ])
+              } else {
+                Alert.alert('Error', response.data?.message || 'Terjadi kesalahan saat melakukan pembayaran. Silakan coba lagi.');
+              }
+              setIsLoading(false);
+            },
+          },
+        ],
+      );
+    } else {
+      navigation.navigate('Login');
+    }
   };
 
   const handleClearCart = () => {
@@ -87,9 +127,6 @@ export default () => {
       ],
     );
   };
-
-  const total = cart.reduce((sum, item) => sum + (item.hargajual1 ?? 0) * item.quantity, 0);
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   if (cart.length === 0) {
     return (

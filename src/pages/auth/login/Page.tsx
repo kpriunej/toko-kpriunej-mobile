@@ -74,7 +74,7 @@ export default () => {
 
       await AsyncStorage.setItem('token', response.data.token);
 
-      Alert.alert('Login berhasil', response.data.message ?? 'Selamat datang kembali!');
+      Alert.alert('Alhamdullilah', response.data.message ?? 'Selamat datang kembali!');
       setUser(responseMe.data.data);
       navigation.replace('Main');
     } catch (error) {

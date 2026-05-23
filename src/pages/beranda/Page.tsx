@@ -218,7 +218,7 @@ export default () => {
         <View className="flex-row items-center justify-between">
           <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
           <Image
-            source={require('../../../assets/icons/logo.jpg')}
+            source={require('../../../assets/icons/logo.png')}
             className="h-10 w-10 rounded-full bg-white"
           />
         </View>

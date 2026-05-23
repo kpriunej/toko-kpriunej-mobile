@@ -6,7 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './pages/auth/login/Page';
 import PendaftaranScreen from './pages/auth/pendaftaran/Page';
 import MainTabBar from './navigations/main/TabBar';
-import PembayaranScreen from './pages/pembayaran/Page';
 import { useEffect } from 'react';
 import SplashScreen from 'react-native-splash-screen';
 
@@ -28,13 +27,6 @@ function App() {
               component={MainTabBar}
               options={{
                 headerShown: false
-              }}
-            />
-            <Stack.Screen 
-              name="Pembayaran"
-              component={PembayaranScreen}
-              options={{
-                headerShown: false,
               }}
             />
             <Stack.Screen 

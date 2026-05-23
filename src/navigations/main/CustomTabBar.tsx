@@ -83,7 +83,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
                     </View>
                   )}
                 </View>
-                <Text className={`mt-1 text-[12px] ${focused ? 'text-emerald-700' : 'text-slate-500'}`}>
+                <Text className={`mt-1 text-[12px] ${focused ? 'text-sky-700' : 'text-slate-500'}`}>
                   {typeof label === 'string' ? label : route.name}
                 </Text>
               </TouchableOpacity>
