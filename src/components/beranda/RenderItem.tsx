@@ -14,7 +14,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
   const stockText = stockValue > 0 ? `${stockValue} tersedia` : 'Stok kosong';
   const stockPillClass =
     stockValue > 0
-      ? 'bg-emerald-100 text-emerald-700'
+      ? 'bg-sky-100 text-emerald-700'
       : 'bg-rose-100 text-rose-700';
 
   const handleAddToCart = async () => {
@@ -81,7 +81,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
         <View>
           <Pressable 
             className={`
-              items-center rounded-xl bg-emerald-700 px-3 py-1 active:bg-emerald-800
+              items-center rounded-xl bg-sky-700 px-3 py-1 active:bg-sky-800
               ${stockValue <= 0 ? 'opacity-50' : ''}
             `}
             onPress={() => handleAddToCart()}

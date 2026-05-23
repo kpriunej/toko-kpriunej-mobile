@@ -1,28 +1,26 @@
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import useAuth from '../../../hooks/useAuth';
-import { clearAuthSession } from '../../../services/authSession';
+import useAuth from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
-  Home: undefined;
+  Pesanan: undefined;
   Login: undefined;
 };
 
 export default () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Home'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pesanan'>>();
   const { user, handleLogout } = useAuth();
   const isLoggedIn = Boolean(user);
   const onLogoutPress = async () => {
     await AsyncStorage.removeItem('token');
-    await clearAuthSession();
     handleLogout();
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-6 pb-28">
+    <SafeAreaView className="flex-1 bg-sky-50 px-4 pt-6 pb-28">
       <View className="rounded-3xl bg-white p-6 shadow-sm">
         <Text className="text-2xl font-bold text-emerald-900">
           {isLoggedIn ? `Halo, ${user?.name}` : 'Halo, Tamu'}
@@ -33,7 +31,7 @@ export default () => {
             : 'Masuk untuk mendapatkan pengalaman belanja yang lebih cepat dan personal.'}
         </Text>
 
-        <View className="mt-6 rounded-3xl bg-emerald-50 p-5 shadow-sm">
+        <View className="mt-6 rounded-3xl bg-sky-50 p-5 shadow-sm">
           <View className="flex-row items-center justify-between">
             <Text className="font-semibold text-slate-700">Status Akun</Text>
             <Text className="text-emerald-800">
@@ -73,7 +71,7 @@ export default () => {
           onPress={isLoggedIn ? onLogoutPress : () => {
             navigation.replace('Login');
           }}
-          className={`mt-6 rounded-2xl ${isLoggedIn ? 'bg-red-700' : 'bg-emerald-700'} px-4 py-4 items-center active:bg-emerald-800`}
+          className={`mt-6 rounded-2xl ${isLoggedIn ? 'bg-red-700' : 'bg-sky-700'} px-4 py-4 items-center active:bg-sky-800`}
         >
           <Text className="text-base font-bold text-white">
             {isLoggedIn ? 'Logout' : 'Login'}

@@ -14,9 +14,9 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { apiUrl } from '../../utils/helpers';
 import { apiService } from '../../services/api.services';
 import Barang from '../../interfaces/Barang';
-import ListFooter from '../../components/home/ListFooter';
-import ListEmpty from '../../components/home/ListEmpty';
-import RenderItem from '../../components/home/RenderItem';
+import ListFooter from '../../components/beranda/ListFooter';
+import ListEmpty from '../../components/beranda/ListEmpty';
+import RenderItem from '../../components/beranda/RenderItem';
 import { PaginatedResponse } from '../../interfaces';
 
 const isBarang = (value: unknown): value is Barang => {
@@ -213,8 +213,8 @@ export default () => {
   ]);
 
   return (
-    <SafeAreaView className="flex-1 bg-lime-50">
-      <View className="bg-emerald-700 px-4 py-3 shadow-sm rounded-b-3xl">
+    <SafeAreaView className="flex-1 bg-sky-50">
+      <View className="bg-sky-700 px-4 py-3 shadow-sm rounded-b-3xl">
         <View className="flex-row items-center justify-between">
           <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
           <Image
@@ -224,7 +224,7 @@ export default () => {
         </View>
         <View className="flex-row items-center gap-2 mt-2 relative">
           <TextInput
-            className="flex-1 h-10 py-0 rounded-2xl border border-emerald-200 px-4 text-base text-slate-900 bg-white"
+            className="flex-1 h-10 py-0 rounded-2xl border border-sky-200 px-4 text-base text-slate-900 bg-white"
             placeholder="Cari barang favorit kamu..."
             placeholderTextColor="#6b7280"
             value={query}
@@ -264,7 +264,7 @@ export default () => {
             </Text>
             <Pressable
               onPress={() => fetchBarang(1)}
-              className="mt-4 rounded-xl bg-emerald-700 px-5 py-3 active:bg-emerald-800"
+              className="mt-4 rounded-xl bg-sky-700 px-5 py-3 active:bg-sky-800"
             >
               <Text className="font-semibold text-white">Coba Lagi</Text>
             </Pressable>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Warna utama yang kita gunakan untuk background splash screen -->
+    <color name="primary">#1b44c0</color>
+    
+    <!-- Kamu juga bisa menambahkan warna-warna lain di sini -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="accent">#FF4081</color>
+</resources>

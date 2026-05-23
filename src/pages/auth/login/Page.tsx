@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -18,11 +17,12 @@ import useAuth from '../../../hooks/useAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Header from '../../../components/auth/Header';
 
 type RootStackParamList = {
-  HomeTabs: undefined;
+  Main: undefined;
   Login: undefined;
-  Registration: undefined;
+  Pendaftaran: undefined;
 };
 
 export default () => {
@@ -40,7 +40,7 @@ export default () => {
     const initializeAuth = async () => {
       const token = await AsyncStorage.getItem('token');
       if (token && user) {
-        navigation.replace('HomeTabs');
+        navigation.replace('Main');
       }
     };
 
@@ -76,7 +76,7 @@ export default () => {
 
       Alert.alert('Login berhasil', response.data.message ?? 'Selamat datang kembali!');
       setUser(responseMe.data.data);
-      navigation.replace('HomeTabs');
+      navigation.replace('Main');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login gagal.';
       setErrorMessage(message);
@@ -86,7 +86,7 @@ export default () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-amber-50">
+    <SafeAreaView className="flex-1 bg-sky-50">
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -99,24 +99,7 @@ export default () => {
         >
           <View className="flex-1 justify-between">
             <View>
-              <View className="rounded-[32px] bg-emerald-950 px-6 py-8 shadow-sm">
-                <View className="items-center gap-3">
-                  <View className="h-16 w-16 overflow-hidden rounded-2xl bg-white/10 p-2">
-                    <Image
-                      source={require('../../../../assets/icons/logo.jpg')}
-                      className="h-full w-full"
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text className="text-xs font-semibold uppercase tracking-[3px] text-emerald-200">
-                    TOKO ONLINE
-                  </Text>
-                </View>
-                <Text className="mt-6 text-base leading-6 text-center text-emerald-100">
-                  KPRI Universitas Jember
-                </Text>
-              </View>
-
+              <Header />
               <View className="-mt-6 rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
                 <View>
                   <Text className="text-sm font-semibold text-stone-800">User</Text>
@@ -135,7 +118,7 @@ export default () => {
                   <View className="flex-row items-center justify-between">
                     <Text className="text-sm font-semibold text-stone-800">Password</Text>
                     <Pressable onPress={() => setSecureTextEntry(current => !current)}>
-                      <Text className="text-sm font-semibold text-emerald-700">
+                      <Text className="text-sm font-semibold text-sky-700">
                         {secureTextEntry ? 'Tampilkan' : 'Sembunyikan'}
                       </Text>
                     </Pressable>
@@ -162,7 +145,7 @@ export default () => {
                     <Text className="text-sm text-stone-700">Ingat saya</Text>
                   </View>
                   <Pressable>
-                    <Text className="text-sm font-semibold text-emerald-700">
+                    <Text className="text-sm font-semibold text-sky-700">
                       Lupa password?
                     </Text>
                   </Pressable>
@@ -175,7 +158,7 @@ export default () => {
                 <Pressable
                   onPress={handleLogin}
                   disabled={isSubmitting}
-                  className="mt-8 rounded-2xl bg-emerald-700 px-4 py-4 active:bg-emerald-800 disabled:opacity-60"
+                  className="mt-8 rounded-2xl bg-sky-700 px-4 py-4 active:bg-sky-800 disabled:opacity-60"
                 >
                   <Text className="text-center text-base font-bold text-white">
                     {isSubmitting ? 'Memproses...' : 'Masuk'}
@@ -183,7 +166,7 @@ export default () => {
                 </Pressable>
 
                 <Pressable
-                  onPress={() => navigation.replace('HomeTabs')}
+                  onPress={() => navigation.replace('Main')}
                   className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50"
                 >
                   <Text className="text-center text-base font-semibold text-stone-700">
@@ -194,8 +177,8 @@ export default () => {
                 <View
                   className="mt-5 flex-row items-center justify-center"
                 >
-                  <Pressable onPress={() => navigation.replace('Registration')}>
-                    <Text className="text-sm font-semibold text-emerald-700">
+                  <Pressable onPress={() => navigation.replace('Pendaftaran')}>
+                    <Text className="text-sm font-semibold text-sky-700">
                       Belum Punya Akun?
                     </Text>
                   </Pressable>

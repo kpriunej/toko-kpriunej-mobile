@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,9 +14,10 @@ import { apiService } from '../../../services/api.services';
 import { apiUrl } from '../../../utils/helpers';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Header from '../../../components/auth/Header';
 
 type RootStackParamList = {
-  HomeTabs: undefined;
+  Main: undefined;
   Login: undefined;
 };
 
@@ -83,24 +83,7 @@ export default () => {
         >
           <View className="flex-1 justify-between">
             <View>
-              <View className="rounded-[32px] bg-emerald-950 px-6 py-8 shadow-sm">
-                <View className="items-center gap-3">
-                  <View className="h-16 w-16 overflow-hidden rounded-2xl bg-white/10 p-2">
-                    <Image
-                      source={require('../../../../assets/icons/logo.jpg')}
-                      className="h-full w-full"
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text className="text-xs font-semibold uppercase tracking-[3px] text-emerald-200">
-                    TOKO ONLINE
-                  </Text>
-                </View>
-                <Text className="mt-6 text-base leading-6 text-center text-emerald-100">
-                  KPRI Universitas Jember
-                </Text>
-              </View>
-
+              <Header />
               <View className="-mt-6 rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
                 <View>
                   <Text className="text-sm font-semibold text-stone-800">Nama</Text>
@@ -114,7 +97,7 @@ export default () => {
                     autoCapitalize="words"
                     placeholder="Masukkan nama lengkap"
                     placeholderTextColor="#94a3b8"
-                    className={`mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900`}
+                    className={`mt-3 rounded-2xl border ${errorMessage?.name?.[0] !== '' ? "border-red-200 bg-red-50" : "border-stone-200 bg-stone-50"} px-4 py-4 text-base text-stone-900`}
                   />
                   {errorMessage?.name?.[0] !== '' ? (
                     <Text className="mt-1 text-xs font-medium text-rose-600">{errorMessage.name[0]}</Text>
@@ -132,7 +115,7 @@ export default () => {
                     autoCapitalize="none"
                     placeholder="Masukkan email"
                     placeholderTextColor="#94a3b8"
-                    className={`mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900`}
+                    className={`mt-3 rounded-2xl border ${errorMessage?.email?.[0] !== '' ? "border-red-200 bg-red-50" : "border-stone-200 bg-stone-50"} px-4 py-4 text-base text-stone-900`}
                   />
                   {errorMessage?.email?.[0] !== '' ? (
                     <Text className="mt-1 text-xs font-medium text-rose-600">{errorMessage.email[0]}</Text>
@@ -150,7 +133,7 @@ export default () => {
                     autoCapitalize="none"
                     placeholder="Masukkan nomor telepon"
                     placeholderTextColor="#94a3b8"
-                    className={`mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900`}
+                    className={`mt-3 rounded-2xl border ${errorMessage?.no_hp?.[0] !== '' ? "border-red-200 bg-red-50" : "border-stone-200 bg-stone-50"} px-4 py-4 text-base text-stone-900`}
                   />
                   {errorMessage?.no_hp?.[0] !== '' ? (
                     <Text className="mt-1 text-xs font-medium text-rose-600">{errorMessage.no_hp[0]}</Text>
@@ -160,7 +143,7 @@ export default () => {
                   <View className="flex-row items-center justify-between">
                     <Text className="text-sm font-semibold text-stone-800">Password</Text>
                     <Pressable onPress={() => setSecureTextEntry(current => ({ ...current, password: !current.password }))}>
-                      <Text className="text-sm font-semibold text-emerald-700">
+                      <Text className="text-sm font-semibold text-sky-700">
                         {secureTextEntry.password ? 'Tampilkan' : 'Sembunyikan'}
                       </Text>
                     </Pressable>
@@ -175,7 +158,7 @@ export default () => {
                     secureTextEntry={secureTextEntry.password}
                     placeholder="Masukkan password"
                     placeholderTextColor="#94a3b8"
-                    className={`mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900`}
+                    className={`mt-3 rounded-2xl border ${errorMessage?.password?.[0] !== '' ? "border-red-200 bg-red-50" : "border-stone-200 bg-stone-50"} px-4 py-4 text-base text-stone-900`}
                   />
                   {errorMessage?.password?.[0] !== '' ? (
                     <Text className="mt-1 text-xs font-medium text-rose-600">{errorMessage.password[0]}</Text>
@@ -185,7 +168,7 @@ export default () => {
                   <View className="flex-row items-center justify-between">
                     <Text className="text-sm font-semibold text-stone-800">Konfirmasi Password</Text>
                     <Pressable onPress={() => setSecureTextEntry(current => ({ ...current, password_confirmation: !current.password_confirmation }))}>
-                      <Text className="text-sm font-semibold text-emerald-700">
+                      <Text className="text-sm font-semibold text-sky-700">
                         {secureTextEntry.password_confirmation ? 'Tampilkan' : 'Sembunyikan'}
                       </Text>
                     </Pressable>
@@ -200,7 +183,7 @@ export default () => {
                     secureTextEntry={secureTextEntry.password_confirmation}
                     placeholder="Masukkan konfirmasi password"
                     placeholderTextColor="#94a3b8"
-                    className={`mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900`}
+                    className={`mt-3 rounded-2xl border ${errorMessage?.password_confirmation?.[0] !== '' ? "border-red-200 bg-red-50" : "border-stone-200 bg-stone-50"} px-4 py-4 text-base text-stone-900`}
                   />
                   {errorMessage?.password_confirmation?.[0] !== '' ? (
                     <Text className="mt-1 text-xs font-medium text-rose-600">{errorMessage.password_confirmation[0]}</Text>
@@ -210,7 +193,7 @@ export default () => {
                 <Pressable
                   onPress={handleRegistration}
                   disabled={isSubmitting}
-                  className="mt-8 rounded-2xl bg-emerald-700 px-4 py-4 active:bg-emerald-800 disabled:opacity-60"
+                  className="mt-8 rounded-2xl bg-sky-700 px-4 py-4 active:bg-sky-800 disabled:opacity-60"
                 >
                   <Text className="text-center text-base font-bold text-white">
                     {isSubmitting ? 'Memproses...' : 'Daftar'}
@@ -218,7 +201,7 @@ export default () => {
                 </Pressable>
 
                 <Pressable
-                  onPress={() => navigation.replace('HomeTabs')}
+                  onPress={() => navigation.replace('Main')}
                   className="mt-4 rounded-2xl border border-stone-200 px-4 py-4 active:bg-stone-50"
                 >
                   <Text className="text-center text-base font-semibold text-stone-700">
@@ -230,7 +213,7 @@ export default () => {
                   className="mt-5 flex-row items-center justify-center"
                 >
                   <Pressable onPress={() => navigation.replace('Login')}>
-                    <Text className="text-sm font-semibold text-emerald-700">
+                    <Text className="text-sm font-semibold text-sky-700">
                       Sudah Punya Akun?
                     </Text>
                   </Pressable>

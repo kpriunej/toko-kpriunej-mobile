@@ -28,7 +28,7 @@ const ListFooter: React.FC<ListFooterProps> = ({
         </Text>
         <Pressable
           onPress={() => fetchBarang(currentPage + 1, { isLoadMore: true })}
-          className="mt-2 rounded-xl bg-emerald-700 px-4 py-2 active:bg-emerald-800"
+          className="mt-2 rounded-xl bg-sky-700 px-4 py-2 active:bg-sky-800"
         >
           <Text className="text-sm font-semibold text-white">Coba Lagi</Text>
         </Pressable>

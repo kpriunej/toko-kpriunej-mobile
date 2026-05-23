@@ -4,18 +4,24 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useState } from 'react';
-import { formatCurrency } from '../../../utils/helpers';
-import CartItem from '../../../interfaces/CartItem';
-import { getCart, updateCartItemQuantity, clearCart } from '../../../services/cartService';
+import { apiUrl, formatCurrency } from '../../utils/helpers';
+import CartItem from '../../interfaces/CartItem';
+import { getCart, updateCartItemQuantity, clearCart } from '../../services/cartService';
+import useAuth from '../../hooks/useAuth';
+import { apiService } from '../../services/api.services';
 
 type RootStackParamList = {
-  HomeTabs: undefined;
+  Keranjang: undefined;
   Login: undefined;
+  Main: undefined;
+  Pembayaran: undefined;
 };
 
 export default () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'HomeTabs'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Keranjang'>>();
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useFocusEffect(() => {
     loadCart();
@@ -32,11 +38,36 @@ export default () => {
   };
 
   const handleCheckout = () => {
-    if (cart.length === 0) {
-      Alert.alert('Keranjang Kosong', 'Tambahkan produk terlebih dahulu.');
-      return;
-    }
-    Alert.alert('Checkout', 'Fitur checkout akan segera tersedia.');
+    Alert.alert(
+      'Konfirmasi Pembayaran',
+      'Apakah Anda yakin ingin melakukan pembayaran?',
+      [
+        {
+          text: 'Tidak',
+          style: 'cancel',
+        },
+        {
+          text: 'Ya',
+          onPress: async () => {
+            setIsLoading(true);
+            const response = await apiService('POST', apiUrl('/api/pembayaran'), {
+              data: {
+                total: total,
+                user_id: user?.id,
+              },
+            });
+            if (response.status === 200) {
+              Alert.alert('Pembayaran Berhasil', response.data.message, [
+                { text: 'OK', onPress: () => navigation.replace('Main') },
+              ])
+            } else {
+              Alert.alert('Error', response.data?.message || 'Terjadi kesalahan saat melakukan pembayaran. Silakan coba lagi.');
+            }
+            setIsLoading(false);
+          },
+        },
+      ],
+    );
   };
 
   const handleClearCart = () => {
@@ -62,14 +93,14 @@ export default () => {
 
   if (cart.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-lime-50 px-4 pt-6 pb-28">
+      <SafeAreaView className="flex-1 bg-sky-50 px-4 pt-6 pb-28">
         <View className="rounded-3xl bg-white p-6 shadow-sm">
           <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
           <Text className="mt-3 text-base text-slate-600">
             Keranjangmu masih kosong. Yuk tambahkan produk favorit kamu!
           </Text>
 
-          <View className="mt-6 rounded-3xl bg-emerald-50 p-5">
+          <View className="mt-6 rounded-3xl bg-sky-50 p-5">
             <Text className="text-lg font-semibold text-emerald-900">Tips Belanja</Text>
             <Text className="mt-2 text-sm text-slate-700">
               Gunakan fitur cari untuk menemukan produk dengan cepat. Kami akan menyimpan
@@ -78,8 +109,8 @@ export default () => {
           </View>
 
           <Pressable 
-            onPress={() => navigation.replace('HomeTabs')} 
-            className="mt-6 rounded-2xl bg-emerald-700 px-5 py-4 items-center active:bg-emerald-800"
+            onPress={() => navigation.replace('Main')} 
+            className="mt-6 rounded-2xl bg-sky-700 px-5 py-4 items-center active:bg-sky-800"
           >
             <Text className="font-semibold text-white">Jelajah Produk</Text>
           </Pressable>
@@ -89,7 +120,7 @@ export default () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-lime-50">
+    <SafeAreaView className="flex-1 bg-sky-50">
       <View className="flex-1">
         <View className="border-b border-emerald-200 bg-white px-4 py-4">
           <Text className="text-2xl font-bold text-emerald-900">Keranjang Belanja</Text>
@@ -124,7 +155,7 @@ export default () => {
               <View className="mt-3 flex-row items-center justify-between rounded-lg bg-gray-100 p-2">
                 <Pressable
                   onPress={() => handleQuantityChange(item.idtab, item.quantity - 1)}
-                  className="h-8 w-8 items-center justify-center rounded bg-emerald-600 active:bg-emerald-700"
+                  className="h-8 w-8 items-center justify-center rounded bg-sky-600 active:bg-sky-700"
                 >
                   <FontAwesome5 name="minus" size={12} color="#fff" />
                 </Pressable>
@@ -133,7 +164,7 @@ export default () => {
 
                 <Pressable
                   onPress={() => handleQuantityChange(item.idtab, item.quantity + 1)}
-                  className="h-8 w-8 items-center justify-center rounded bg-emerald-600 active:bg-emerald-700"
+                  className="h-8 w-8 items-center justify-center rounded bg-sky-600 active:bg-sky-700"
                 >
                   <FontAwesome5 name="plus" size={12} color="#fff" />
                 </Pressable>
@@ -160,9 +191,12 @@ export default () => {
 
             <Pressable
               onPress={handleCheckout}
-              className="flex-1 rounded-xl bg-emerald-700 py-3 active:bg-emerald-800"
+              className="flex-1 rounded-xl bg-sky-700 py-3 active:bg-sky-800"
+              disabled={isLoading}
             >
-              <Text className="text-center font-semibold text-white">Checkout</Text>
+              <Text className="text-center font-semibold text-white">
+                {isLoading ? 'Sedang memproses...' : 'Checkout'}
+              </Text>
             </Pressable>
           </View>
         </View>
