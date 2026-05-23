@@ -70,7 +70,7 @@ export default () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-amber-50">
+    <SafeAreaView className="flex-1 bg-sky-50">
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

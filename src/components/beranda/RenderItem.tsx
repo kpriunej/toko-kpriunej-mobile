@@ -72,7 +72,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
       </View>
 
       <View className="flex-row items-end justify-between">
-        <View className="rounded-xl bg-amber-50 px-3 py-2">
+        <View className="rounded-xl bg-sky-50 px-3 py-2">
           <Text className="text-xs text-amber-700">Harga Jual</Text>
           <Text className="text-lg font-bold text-amber-900">
             {formatCurrency(item?.hargajual1 ?? 0)}/{item?.nama_kemasan ? item.nama_kemasan.substring(3) : '-'}
