@@ -1,18 +1,19 @@
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { formatCurrency } from "../../utils/helpers";
 import moment from "moment";
+import TransaksiJualHeader from "../../interfaces/TransaksiJualHeader";
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import RootStackParamList from "../../interfaces/RootStackParamList";
+import TransaksiJualDetail from "../../interfaces/TransaksiJualDetail";
 
 interface RenderCardProps {
-  item?: {
-    status: string;
-    grandtotal: number;
-    tanggal_transaksi: string;
-    nomor_faktur: string;
-  };
+  item?: TransaksiJualHeader<TransaksiJualDetail>;
   loading?: boolean;
 }
 
 const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pesanan'>>();
   if (loading) {
     return (
       <View className="mb-3 animate-pulse rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10">
@@ -42,32 +43,38 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
     );
   }
 
+  if (!item) {
+    return null;
+  }
+
   return (
-    <View className="mb-4 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10">
+    <Pressable
+      onPress={() => navigation.navigate('DetailPesanan', { id_header: item.id_header })} 
+      className="mb-4 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10">
       <View className="mb-2 flex-row items-start justify-between gap-3">
         <View className="flex-1">
           <Text className="text-xs font-semibold uppercase tracking-wider text-sky-600">
-            {moment(item?.tanggal_transaksi).format('DD MMMM YYYY')}
+            {moment(item.tanggal_transaksi).format('DD MMMM YYYY')}
           </Text>
           <Text className="mt-1 text-lg font-bold text-sky-950">
-            #INV-{item?.nomor_faktur}
+            #INV-{item.nomor_faktur}
           </Text>
         </View>
 
         <View className={`rounded-xl px-3 py-1 bg-sky-100 text-sky-700`}>
-          <Text className="text-xs font-semibold">{item?.status}</Text>
+          <Text className="text-xs font-semibold">{item.status}</Text>
         </View>
       </View>
 
       <View className="flex-row items-end justify-between">
         <View className="rounded-xl bg-sky-50 px-3 py-2">
-          <Text className="text-xs text-amber-700">Total Pembayaran</Text>
+          <Text className="text-xs text-amber-700">Grand Total</Text>
           <Text className="text-lg font-bold text-amber-900">
-            {formatCurrency(item?.grandtotal ?? 0)}
+            Rp. {formatCurrency(item.grandtotal ?? 0)}
           </Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 

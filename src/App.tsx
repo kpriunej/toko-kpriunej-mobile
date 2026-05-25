@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './pages/auth/login/Page';
 import PendaftaranScreen from './pages/auth/pendaftaran/Page';
+import DetailPesananScreen from './pages/pesanan/detail/Page';
 import MainTabBar from './navigations/main/TabBar';
 import { useEffect } from 'react';
 import SplashScreen from 'react-native-splash-screen';
@@ -27,6 +28,13 @@ function App() {
               <Stack.Screen 
                 name="Main"
                 component={MainTabBar}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="DetailPesanan"
+                component={DetailPesananScreen}
                 options={{
                   headerShown: false
                 }}

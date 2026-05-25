@@ -17,28 +17,31 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useAuth from '../../hooks/useAuth';
 import Header from '../../components/Header';
+import TransaksiJualHeader from '../../interfaces/TransaksiJualHeader';
+import RootStackParamList from '../../interfaces/RootStackParamList';
+import TransaksiJualDetail from '../../interfaces/TransaksiJualDetail';
 
-const isData = (value: unknown) => {
+const isData = (value: unknown): value is TransaksiJualHeader<TransaksiJualDetail> => {
   if (!value || typeof value !== 'object') {
     return false;
   }
-
-  const candidate = value as Partial<any>;
+  const candidate = value as Record<string, unknown>;
   return typeof candidate.id_header === 'number';
 };
 
-type RootStackParamList = {
-  Pesanan: undefined;
-  Login: undefined;
-  Main: undefined;
-  Pembayaran: undefined;
-};
+interface FetchOptions {
+  isManualRefresh?: boolean;
+  isLoadMore?: boolean;
+}
+
+export const contentContainerStyle = { paddingBottom: 112 };
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pesanan'>>();
   const { user } = useAuth();
   
-  const [items, setItems] = useState<PaginatedResponse<any>>({ data: [] });
+  // Menggunakan generic type pada state
+  const [items, setItems] = useState<PaginatedResponse<TransaksiJualHeader<TransaksiJualDetail>>>({ data: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -47,16 +50,10 @@ export default () => {
   const loadingMorePageRef = useRef<number | null>(null);
 
   const fetchItem = useCallback(
-    async (
-      page = 1,
-      options: {
-        isManualRefresh?: boolean;
-        isLoadMore?: boolean;
-      } = {},
-    ) => {
-
+    async (page = 1, options: FetchOptions = {}) => {
       const { isManualRefresh = false, isLoadMore = false } = options;
 
+      // Pencegahan double-fetch
       if (isLoadMore && loadingMorePageRef.current === page) {
         return;
       }
@@ -65,6 +62,7 @@ export default () => {
         loadingMorePageRef.current = page;
       }
 
+      // Atur status UI loading
       if (isManualRefresh) {
         setIsRefreshing(true);
       } else if (isLoadMore) {
@@ -79,13 +77,15 @@ export default () => {
       setLoadMoreError(null);
 
       try {
-        const params: any = { 
+        // Definisikan params secara eksplisit tanpa 'any'
+        const params: Record<string, string | number | undefined> = { 
           page,
           per_page: 25,
           sort_by: "created_at",
           sort_type: "desc",
-          id_user: user.id
+          id_user: user?.id // Menambahkan opsional chaining demi keamanan
         };
+
         const response = await apiService('get', apiUrl('/api/transaksi-jual-header'), {
           params,
         });
@@ -96,8 +96,7 @@ export default () => {
 
         if (response?.status >= 400) {
           throw new Error(
-            response?.data?.message ??
-              'Terjadi kesalahan saat memuat data barang.',
+            response?.data?.message ?? 'Terjadi kesalahan saat memuat data barang.',
           );
         }
 
@@ -107,15 +106,16 @@ export default () => {
           : Array.isArray(payload?.data)
           ? payload.data
           : [];
+          
         const incomingData = incomingDataRaw.filter(isData);
 
         setItems(previousItems => {
           const mergedData =
             page === 1 ? incomingData : [...previousItems.data, ...incomingData];
 
-          // Remove duplicates based on id_header
-          const uniqueDataMap = new Map<number, any>();
-          mergedData.forEach((item: any) => {
+          // Duplication filtering
+          const uniqueDataMap = new Map<number, TransaksiJualHeader<TransaksiJualDetail>>();
+          mergedData.forEach((item: TransaksiJualHeader<TransaksiJualDetail>) => {
             uniqueDataMap.set(item.id_header, item);
           });
 
@@ -140,13 +140,13 @@ export default () => {
         setIsLoading(false);
         setIsRefreshing(false);
         setIsLoadingMore(false);
-
-        if (isLoadMore && loadingMorePageRef.current === page) {
+        // Selalu bersihkan ref ketika proses selesai (sukses maupun gagal)
+        if (isLoadMore) {
           loadingMorePageRef.current = null;
         }
       }
     },
-    [navigation, user],
+    [user?.id], // Ditambahkan user.id agar fetchItem diperbarui jika user berganti
   );
 
   const handleLoadMore = useCallback(() => {
@@ -165,27 +165,29 @@ export default () => {
     });
   }, [
     items.current_page,
-    fetchItem,
     items.next_page_url,
     isLoading,
     isLoadingMore,
     isRefreshing,
+    fetchItem,
   ]);
 
+  // Melakukan pengecekan auth & inisialisasi data secara aman
   useEffect(() => {
     if (!user) {
       navigation.navigate('Login');
       return;
     }
     fetchItem(1);
-  }, []);
+  }, [user, navigation, fetchItem]); // Mengisi dependency array secara lengkap
 
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
-      <Header title="Riwayat Pesanan" />
+      <Header title="RIWAYAT PESANAN" />
       <View className="flex-1 px-3">
-        {isLoading ? (
+        {isLoading && !isRefreshing && !isLoadingMore ? (
           <View className="flex-col gap-3 mb-4">
+            <View className="mt-3"/>
             {[1, 2, 3].map(i => (
               <RenderItem key={i} loading />
             ))}
@@ -220,7 +222,7 @@ export default () => {
               />
             }
             showsVerticalScrollIndicator={false}
-            contentContainerClassName="pb-28"
+            contentContainerStyle={contentContainerStyle}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.4}
             refreshControl={

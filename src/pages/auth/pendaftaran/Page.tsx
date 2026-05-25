@@ -15,11 +15,7 @@ import { apiUrl } from '../../../utils/helpers';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from '../../../components/auth/Header';
-
-type RootStackParamList = {
-  Main: undefined;
-  Login: undefined;
-};
+import RootStackParamList from '../../../interfaces/RootStackParamList';
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();

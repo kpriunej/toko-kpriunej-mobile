@@ -65,6 +65,11 @@ apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 def enableProguardInReleaseBuilds = true
 
 /**
+ * Set this to true to separate your APK per CPU architecture.
+ */
+def enableSeparateBuildPerCPUArchitecture = true
+
+/**
  * The preferred build flavor of JavaScriptCore (JSC)
  *
  * For example, to use the international variant, you can use:

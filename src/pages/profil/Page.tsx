@@ -5,11 +5,7 @@ import useAuth from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from '../../components/Header';
-
-type RootStackParamList = {
-  Profil: undefined;
-  Login: undefined;
-};
+import RootStackParamList from '../../interfaces/RootStackParamList';
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Profil'>>();
@@ -22,7 +18,7 @@ export default () => {
 
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
-      <Header title="Profil" />
+      <Header title="PROFIL" />
       
       <View className="p-4">
         <View className="bg-white p-6 rounded-3xl">
@@ -36,7 +32,7 @@ export default () => {
             </Text>
           ) : (
             <View>
-              <View className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+              <View className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
                 <Text className="text-sm text-slate-700">
                   Nama: {user?.name ?? 'Tidak tersedia'}
                 </Text>
@@ -47,14 +43,16 @@ export default () => {
                   Nomor Telepon: {user?.no_hp ?? 'Tidak tersedia'}`
                 </Text>
               </View>
-              {['Profil Saya', 'Riwayat Pesanan', 'Pengaturan'].map(item => (
-                <Pressable
-                  key={item}
-                  className="rounded-2xl bg-white px-4 py-4 shadow"
-                >
-                  <Text className="text-base font-medium text-slate-800">{item}</Text>
-                </Pressable>
-              ))}
+              <View className='flex-col gap-3 mb'>
+                {['Profil Saya', 'Riwayat Pesanan', 'Pengaturan'].map(item => (
+                  <Pressable
+                    key={item}
+                    className="rounded-2xl bg-white px-4 py-4 shadow"
+                  >
+                    <Text className="text-base font-medium text-slate-800">{item}</Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           )}
 

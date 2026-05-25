@@ -18,12 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from '../../../components/auth/Header';
-
-type RootStackParamList = {
-  Main: undefined;
-  Login: undefined;
-  Pendaftaran: undefined;
-};
+import RootStackParamList from '../../../interfaces/RootStackParamList';
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
