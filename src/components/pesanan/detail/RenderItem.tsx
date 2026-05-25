@@ -55,8 +55,8 @@ export default ({ item, loading }: RenderCardProps) => {
         </View>
 
         <View className="ml-2 items-end">
-          <Text className="text-lg font-bold text-sky-900">
-            RP. {formatCurrency((item.harga ?? 0) * item.quantity)}
+          <Text className="text font-semibold text-sky-900">
+            Rp. {formatCurrency((item.harga ?? 0) * item.quantity)}
           </Text>
         </View>
       </View>
