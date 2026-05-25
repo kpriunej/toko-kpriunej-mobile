@@ -18,6 +18,8 @@ import TransaksiJualDetail from '../../../interfaces/TransaksiJualDetail';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import ListHeader from '../../../components/pesanan/detail/Header';
 import Footer from '../../../components/pesanan/detail/Footer';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import RootStackParamList from '../../../interfaces/RootStackParamList';
 
 interface FetchOptions {
   isManualRefresh?: boolean;
@@ -25,8 +27,11 @@ interface FetchOptions {
 
 export const contentContainerStyle = { paddingBottom: 112 };
 
-export default ({ navigation, route }: { navigation: any; route: { params: { id_header: number; }}; }) => {
+type Props = NativeStackScreenProps<RootStackParamList, 'DetailPesanan'>;
+
+export default ({ navigation, route }: Props) => {
   const { user } = useAuth();
+  const { id_header } = route.params;
   
   // Menggunakan generic type pada state
   const [transaksiJualHeader, setTransaksiJualHeader] = useState<TransaksiJualHeader<TransaksiJualDetail>>();
@@ -46,7 +51,7 @@ export default ({ navigation, route }: { navigation: any; route: { params: { id_
       }
 
       try {
-        const response = await apiService('get', apiUrl(`/api/transaksi-jual-header/${route.params.id_header}`), {
+        const response = await apiService('get', apiUrl(`/api/transaksi-jual-header/${id_header}`), {
           params: {
             include: ["transaksi_jual_detail"],
           },
@@ -75,7 +80,7 @@ export default ({ navigation, route }: { navigation: any; route: { params: { id_
         setIsRefreshing(false);
       }
     },
-    [route.params.id_header], // Ditambahkan user.id agar fetchItem diperbarui jika user berganti
+    [id_header], // Ditambahkan user.id agar fetchItem diperbarui jika user berganti
   );
 
   const handleLoadMore = useCallback(() => {
@@ -133,9 +138,13 @@ export default ({ navigation, route }: { navigation: any; route: { params: { id_
             data={transaksiJualHeader?.transaksi_jual_detail}
             keyExtractor={item => item.idtab.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
-            ListHeaderComponent={<ListHeader transaksiJualHeader={transaksiJualHeader!} />}
+            ListHeaderComponent={
+              transaksiJualHeader && <ListHeader transaksiJualHeader={transaksiJualHeader!} />
+            }
             ListEmptyComponent={<ListEmpty />}
-            ListFooterComponent={<Footer transaksiJualHeader={transaksiJualHeader!} />}
+            ListFooterComponent={
+              transaksiJualHeader && <Footer transaksiJualHeader={transaksiJualHeader!} />
+            }
             showsVerticalScrollIndicator={false}
             contentContainerStyle={contentContainerStyle}
             onEndReached={handleLoadMore}

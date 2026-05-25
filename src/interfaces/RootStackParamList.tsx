@@ -6,7 +6,7 @@ type RootStackParamList = {
   Pesanan: undefined;
   Profil: undefined;
   Pembayaran: undefined;
-  DetailPesanan: undefined | { id_header: number };
+  DetailPesanan: { id_header: number };
 }
 
 export default RootStackParamList
