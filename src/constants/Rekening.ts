@@ -1,0 +1,1 @@
+export const mandiri = "140001234567890";

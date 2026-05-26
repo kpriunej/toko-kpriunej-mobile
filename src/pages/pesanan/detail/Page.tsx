@@ -139,11 +139,11 @@ export default ({ navigation, route }: Props) => {
             keyExtractor={item => item.idtab.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
             ListHeaderComponent={
-              transaksiJualHeader && <ListHeader transaksiJualHeader={transaksiJualHeader!} />
+              transaksiJualHeader && <ListHeader transaksiJualHeader={transaksiJualHeader} />
             }
             ListEmptyComponent={<ListEmpty />}
             ListFooterComponent={
-              transaksiJualHeader && <Footer transaksiJualHeader={transaksiJualHeader!} />
+              transaksiJualHeader && <Footer transaksiJualHeader={transaksiJualHeader} setTransaksiJualHeader={setTransaksiJualHeader} />
             }
             showsVerticalScrollIndicator={false}
             contentContainerStyle={contentContainerStyle}
