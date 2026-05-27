@@ -182,7 +182,7 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
         </View>
         <View className="flex-row items-center justify-between">
           <Text className="text-2xl font-bold text-sky-900">
-            Rp. {formatCurrency(transaksiJualHeader.grandtotal)}
+            Rp. {formatCurrency((Number(transaksiJualHeader.grandtotal) ?? 0) + (Number(transaksiJualHeader.nomor_faktur.slice(-3))))}
           </Text>
         </View>
         
@@ -196,7 +196,7 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
             </Text>
           </Pressable>
         ) : null}
-        {["Menunggu Pembayaran", "Menunggu Konfirmasi"].includes(transaksiJualHeader.status) && (
+        {["Menunggu Pembayaran"].includes(transaksiJualHeader.status) && (
           <>
             {transaksiJualHeader.status === "Menunggu Pembayaran" && (
               <Pressable 
