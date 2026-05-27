@@ -42,8 +42,8 @@ export default ({ total, cart, loadCart, clearCart }: FooterProps) => {
   const handleCheckout = () => {
     if (user) {
       Alert.alert(
-        'Konfirmasi Pembayaran',
-        'Apakah Anda yakin ingin melakukan pembayaran?',
+        'Konfirmasi Pesanan',
+        'Apakah Anda yakin ingin melakukan pesanan?',
         [
           {
             text: 'Tidak',
@@ -85,18 +85,18 @@ export default ({ total, cart, loadCart, clearCart }: FooterProps) => {
                 const uploadResults = await Promise.all(uploadPromises);
   
                 if (uploadResults.some((result) => result.status >= 400)) {
-                  Alert.alert('Error', 'Terjadi kesalahan saat melakukan pembayaran. Silakan coba lagi.');
+                  Alert.alert('Error', 'Terjadi kesalahan saat melakukan pesanan. Silakan coba lagi.');
                   setIsLoading(false);
                   return;
                 }
 
                 await clearCart();
   
-                Alert.alert('Alamdulillah', 'Pembayaran berhasil', [
+                Alert.alert('Alamdulillah', 'Pesanan berhasil dibuat!', [
                   { text: 'OK', onPress: () => navigation.replace('DetailPesanan', {id_header: response.data.data.id_header}) },
                 ])
               } else {
-                Alert.alert('Error', response.data?.message || 'Terjadi kesalahan saat melakukan pembayaran. Silakan coba lagi.');
+                Alert.alert('Error', response.data?.message || 'Terjadi kesalahan saat melakukan pesanan. Silakan coba lagi.');
               }
               setIsLoading(false);
             },

@@ -151,7 +151,7 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
                 Transfer ke
               </Text>
               <Text className="font-semibold text-red-900 animate-pulse text-xl">
-                {Countdown(sisaWaktu)}
+                {sisaWaktu}
               </Text>
             </View>
             <View className="flex-row items-center justify-between mt-4">
