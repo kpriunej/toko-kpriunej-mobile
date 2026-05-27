@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import TransaksiJualHeader from "../../../interfaces/TransaksiJualHeader";
 import TransaksiJualDetail from "../../../interfaces/TransaksiJualDetail";
+import statusDetail from "../StatusDetail";
 
 interface HeaderProps {
   transaksiJualHeader: TransaksiJualHeader<TransaksiJualDetail>;
@@ -13,12 +14,8 @@ export default ({ transaksiJualHeader }: HeaderProps) => {
         #INV-{transaksiJualHeader?.nomor_faktur}
       </Text>
 
-      <View className={`rounded-xl px-3 py-1 bg-sky-100 
-        ${transaksiJualHeader.status === "Menunggu Pembayaran" ? "bg-yellow-100" : "bg-green-100"}
-      `}>
-        <Text className={`text-xs font-semibold
-          ${transaksiJualHeader.status === "Menunggu Pembayaran" ? "text-yellow-500" : "text-green-700"}
-        `}>
+      <View className={`rounded-xl px-3 py-1 ${statusDetail[transaksiJualHeader.status]?.background ?? 'bg-sky-100'}`}>
+        <Text className={`text-xs font-semibold ${statusDetail[transaksiJualHeader.status]?.color ?? 'text-sky-600'}`}>
           {transaksiJualHeader.status.toUpperCase()}
         </Text>
       </View>

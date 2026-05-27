@@ -8,6 +8,8 @@ import { mandiri } from "../../../constants/Rekening";
 import Countdown from "../../../utils/Countdown";
 import { launchImageLibrary } from "react-native-image-picker"; 
 import { apiService } from "../../../services/api.services";
+import ImageView from "react-native-image-viewing";
+import { useState } from "react";
 
 interface FooterProps {
   transaksiJualHeader: TransaksiJualHeader<TransaksiJualDetail>;
@@ -23,8 +25,14 @@ export const iconBank: ImageStyle = {
 export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) => {
   const tanggalBentukDate = new Date(transaksiJualHeader.created_at);
   const sisaWaktu = Countdown(new Date(tanggalBentukDate.setDate(tanggalBentukDate.getDate() + 1)));
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState({
+    bukti_bayar: false,
+    batalkan: false
+  });
   
   const uploadBuktiBayarKeAPI = async (imageUri: string, fileName: string, fileType: string) => {
+    setIsLoading({...isLoading, bukti_bayar: true});
     const formData = new FormData();
     Object.keys(transaksiJualHeader).forEach((key) => {
       formData.append(key, transaksiJualHeader[key]);
@@ -36,7 +44,7 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
       type: fileType || "image/jpeg",
     } as any);
 
-    formData.append("status", "Dalam Proses");
+    formData.append("status", "Menunggu Konfirmasi");
 
     const response = await apiService("post", apiUrl("/api/transaksi-jual-header"), {
       headers: {
@@ -54,6 +62,8 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
     } else {
       Alert.alert("Gagal", "Bukti pembayaran gagal diunggah!");
     }
+    
+    setIsLoading({...isLoading, bukti_bayar: false});
   };
 
   const handleBuktiBayar = async () => {
@@ -78,6 +88,45 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
     });
   };
 
+  const handleCancel = async () => {
+    Alert.alert(
+      "Batalkan Pesanan",
+      "Apakah kamu yakin ingin membatalkan pesanan ini?",
+      [
+        { text: "Batal", onPress: () => {}, style: "cancel" },
+        {
+          text: "Batalkan Pesanan",
+          onPress: async () => {
+            await cancelPesanan();
+          },
+          style: "destructive",
+        },
+      ]
+    )
+  }
+
+  const cancelPesanan = async () => {
+    setIsLoading({...isLoading, batalkan: true});
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const {bukti_bayar, ...data} = transaksiJualHeader;
+
+    const response = await apiService("post", apiUrl("/api/transaksi-jual-header"), {
+      data: {
+        ...data,
+        status: "Dibatalkan"
+      }
+    });
+
+    if (response.status === 200) {
+      Alert.alert("Sukses", "Pesanan berhasil dibatalkan!");
+      setTransaksiJualHeader({...transaksiJualHeader, ...response.data.data});
+    } else {
+      Alert.alert("Gagal", "Pesanan gagal dibatalkan!");
+    }
+
+    setIsLoading({...isLoading, batalkan: false}); 
+  }
+
   const handleCopy = async () => {
     Clipboard.setString(mandiri);
     Alert.alert(
@@ -95,33 +144,38 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
             Detail Pembayaran
           </Text>
         </View>
-        <View className="flex-row items-center justify-between mt-4">
-          <Text className="font-semibold text-sky-900">
-            Transfer ke
-          </Text>
-          <Text className="font-semibold text-red-900 animate-pulse text-xl">
-            {Countdown(sisaWaktu)}
-          </Text>
-        </View>
-        <View className="flex-row items-center justify-between mt-4">
-          <Image
-            source={require("../../../../assets/icons/Mandiri.png")}
-            style={iconBank}
-          />
-        </View>
-        <View className="flex-row items-center justify-between mt-4">
-          <Text className="text-xl font-semibold text-sky-900 tracking-widest">
-            {mandiri}
-          </Text>
-          <Pressable
-            onPress={handleCopy}
-            className="flex-row items-center gap-2"
-          >
-            <FontAwesome5Icon name="copy" size={20} color="black" />
-            <Text className="font-semibold text-sky-900">Copy</Text>
-          </Pressable>
-        </View>
-        <View className="flex-row items-center justify-between mt-4 border-t border-sky-200">
+        {transaksiJualHeader.status === "Menunggu Pembayaran" && (
+          <View className="border-b border-sky-200">
+            <View className="flex-row items-center justify-between">
+              <Text className="font-semibold text-sky-900">
+                Transfer ke
+              </Text>
+              <Text className="font-semibold text-red-900 animate-pulse text-xl">
+                {Countdown(sisaWaktu)}
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between mt-4">
+              <Image
+                source={require("../../../../assets/icons/Mandiri.png")}
+                style={iconBank}
+              />
+            </View>
+            <View className="flex-row items-center justify-between mt-4">
+              <Text className="text-xl font-semibold text-sky-900 tracking-widest">
+                {mandiri}
+              </Text>
+              <Pressable
+                onPress={handleCopy}
+                className="flex-row items-center gap-2"
+              >
+                <FontAwesome5Icon name="copy" size={20} color="black" />
+                <Text className="font-semibold text-sky-900">Copy</Text>
+              </Pressable>
+            </View>
+            <View className="mb-4"/>
+          </View>
+        )}
+        <View className="flex-row items-center justify-between">
           <Text className="text-xl font-semibold text-sky-900 mt-4">
             Total Pembayaran
           </Text>
@@ -132,15 +186,49 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
           </Text>
         </View>
         
-        <Pressable 
-          onPress={handleBuktiBayar} 
-          className="mt-6 rounded-2xl bg-sky-700 px-5 py-4 items-center active:bg-sky-800"
-        >
-          <Text className="font-semibold text-white">
-            {transaksiJualHeader.status === "Menunggu Pembayaran" ? "Unggah Bukti Bayar" : "Lihat Bukti Bayar"}
-          </Text>
-        </Pressable>
+        {transaksiJualHeader.bukti_bayar ? (
+          <Pressable
+            onPress={() => setIsImageViewerOpen(true)}
+            className="mt-4 rounded-2xl bg-sky-700 px-5 py-4 items-center active:bg-sky-800"
+          >
+            <Text className="font-semibold text-white">
+              Lihat Bukti Bayar
+            </Text>
+          </Pressable>
+        ) : null}
+        {["Menunggu Pembayaran", "Menunggu Konfirmasi"].includes(transaksiJualHeader.status) && (
+          <>
+            {transaksiJualHeader.status === "Menunggu Pembayaran" && (
+              <Pressable 
+                onPress={handleBuktiBayar} 
+                className="mt-6 rounded-2xl bg-sky-700 px-5 py-4 items-center active:bg-sky-800"
+              >
+                <Text className="font-semibold text-white">
+                  {isLoading.bukti_bayar ? "Sedang memproses..." : "Unggah Bukti Bayar"}
+                </Text>
+              </Pressable>
+            )}
+            <Pressable 
+              onPress={handleCancel} 
+              className="mt-4 rounded-2xl bg-red-700 px-5 py-4 items-center active:bg-red-800"
+            >
+              <Text className="font-semibold text-white">
+                {isLoading.batalkan ? "Sedang memproses..." : "Batalkan Pesanan"}
+              </Text>
+            </Pressable>
+          </>
+        )}
       </View>
+      <ImageView
+        images={[
+          {
+            uri: transaksiJualHeader.bukti_bayar_url,
+          },
+        ] as any}
+        imageIndex={0}
+        visible={isImageViewerOpen}
+        onRequestClose={() => setIsImageViewerOpen(false)}
+      />
     </>
   );
 };

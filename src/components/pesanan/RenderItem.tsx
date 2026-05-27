@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import RootStackParamList from "../../interfaces/RootStackParamList";
 import TransaksiJualDetail from "../../interfaces/TransaksiJualDetail";
+import statusDetail from "./StatusDetail";
 
 interface RenderCardProps {
   item?: TransaksiJualHeader<TransaksiJualDetail>;
@@ -61,12 +62,8 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
           </Text>
         </View>
 
-        <View className={`rounded-xl px-3 py-1 bg-sky-100 
-          ${item.status === "Menunggu Pembayaran" ? "bg-yellow-100" : "bg-green-100"}
-        `}>
-          <Text className={`text-xs font-semibold
-            ${item.status === "Menunggu Pembayaran" ? "text-yellow-500" : "text-green-700"}
-          `}>
+        <View className={`rounded-xl px-3 py-1 ${statusDetail[item.status]?.background ?? 'bg-sky-100'}`}>
+          <Text className={`text-xs font-semibold ${statusDetail[item.status]?.color ?? 'text-sky-600'}`}>
             {item.status.toUpperCase()}
           </Text>
         </View>

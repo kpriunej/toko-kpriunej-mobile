@@ -10,17 +10,12 @@ import MainTabBar from './navigations/main/TabBar';
 import { useEffect } from 'react';
 import SplashScreen from 'react-native-splash-screen';
 import AuthSession from './services/AuthSession';
-// 1. Import RootStackParamList yang sudah kamu buat
-import RootStackParamList from './interfaces/RootStackParamList'; // Sesuaikan path jika berbeda
+import RootStackParamList from './interfaces/RootStackParamList'; 
 
-// 2. Berikan tipe tersebut ke createNativeStackNavigator
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
 
 function App() {
   useEffect(() => {
-    // Sembunyikan splash screen setelah komponen selesai dimuat
-    // Kamu juga bisa membungkusnya di dalam fungsi fetch data jika ada API yang harus dipanggil dulu
     SplashScreen.hide();
   }, []);
 
