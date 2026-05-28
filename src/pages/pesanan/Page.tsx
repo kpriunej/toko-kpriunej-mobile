@@ -20,6 +20,7 @@ import Header from '../../components/Header';
 import TransaksiJualHeader from '../../interfaces/TransaksiJualHeader';
 import RootStackParamList from '../../interfaces/RootStackParamList';
 import TransaksiJualDetail from '../../interfaces/TransaksiJualDetail';
+import ListHeader from '../../components/pesanan/ListHeader';
 
 const isData = (value: unknown): value is TransaksiJualHeader<TransaksiJualDetail> => {
   if (!value || typeof value !== 'object') {
@@ -32,6 +33,7 @@ const isData = (value: unknown): value is TransaksiJualHeader<TransaksiJualDetai
 interface FetchOptions {
   isManualRefresh?: boolean;
   isLoadMore?: boolean;
+  status?: string
 }
 
 export const contentContainerStyle = { paddingBottom: 112 };
@@ -51,7 +53,7 @@ export default () => {
 
   const fetchItem = useCallback(
     async (page = 1, options: FetchOptions = {}) => {
-      const { isManualRefresh = false, isLoadMore = false } = options;
+      const { isManualRefresh = false, isLoadMore = false, status = "Semua" } = options;
 
       // Pencegahan double-fetch
       if (isLoadMore && loadingMorePageRef.current === page) {
@@ -85,6 +87,10 @@ export default () => {
           sort_type: "desc",
           id_user: user?.id // Menambahkan opsional chaining demi keamanan
         };
+
+        if (status !== "Semua") {
+          params.status = status;
+        }
 
         const response = await apiService('get', apiUrl('/api/transaksi-jual-header'), {
           params,
@@ -209,7 +215,7 @@ export default () => {
             data={items.data}
             keyExtractor={item => item.id_header.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
-            ListHeaderComponent={<View className="mt-3" />}
+            ListHeaderComponent={<ListHeader fetchItem={fetchItem} />}
             ListEmptyComponent={<ListEmpty />}
             ListFooterComponent={
               <ListFooter

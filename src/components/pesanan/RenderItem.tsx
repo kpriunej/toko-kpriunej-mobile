@@ -1,4 +1,4 @@
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { formatCurrency } from "../../utils/helpers";
 import moment from "moment";
 import TransaksiJualHeader from "../../interfaces/TransaksiJualHeader";
@@ -62,7 +62,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
   }
 
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={() => navigation.navigate('DetailPesanan', { id_header: item.id_header })} 
       className="mb-3 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-900/10"
     >
@@ -86,15 +86,17 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
         {item.status === "Menunggu Pembayaran" && (
           <View className="rounded-xl bg-sky-50 px-3 py-2">
             <Text className="text-xs text-amber-700">Transfer ke Mandiri</Text>
-            <Pressable
+            <TouchableOpacity
               onPress={handleCopy}
               className="flex-row items-center gap-2"
             >
-              <Text className="text-lg font-bold text-amber-900 tracking-widest">
-                {mandiri}
-              </Text>
+              <View pointerEvents="none">
+                <Text className="text-lg font-bold text-amber-900 tracking-widest">
+                  {mandiri}
+                </Text>
+              </View>
               <FontAwesome5Icon name="copy" size={14} color="#3b82f6" />
-            </Pressable>
+            </TouchableOpacity>
           </View>
         )}
         <View className="rounded-xl bg-sky-50 px-3 py-2">
@@ -113,7 +115,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
           </Text>
         </View>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

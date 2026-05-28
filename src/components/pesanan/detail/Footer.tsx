@@ -175,16 +175,18 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
             <View className="mb-4"/>
           </View>
         )}
-        <View className="flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-sky-900 mt-4">
-            Total Pembayaran
-          </Text>
-        </View>
-        <View className="flex-row items-center justify-between">
-          <Text className="text-2xl font-bold text-sky-900">
-            Rp. {formatCurrency((Number(transaksiJualHeader.grandtotal) ?? 0) + (Number(transaksiJualHeader.nomor_faktur.slice(-3))))}
-          </Text>
-        </View>
+        <Text className="font-semibold text-sky-900 mt-4">
+          Jumlah : Rp. {formatCurrency((Number(transaksiJualHeader.grandtotal) ?? 0))}
+        </Text>
+        <Text className="font-semibold text-sky-900 mt-1">
+          Kode Unik : {transaksiJualHeader.nomor_faktur.slice(-3)}
+        </Text>
+        <Text className="text-xl font-semibold text-sky-900 mt-4">
+          Total Pembayaran
+        </Text>
+        <Text className="text-2xl font-bold text-sky-900">
+          Rp. {formatCurrency((Number(transaksiJualHeader.grandtotal) ?? 0) + (Number(transaksiJualHeader.nomor_faktur.slice(-3))))}
+        </Text>
         
         {transaksiJualHeader.bukti_bayar ? (
           <Pressable

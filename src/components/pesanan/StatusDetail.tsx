@@ -29,6 +29,10 @@ const statusDetail: Record<string, StatusDetail> = {
     color: "text-rose-600",
     background: "bg-rose-100",
   },
+  "Expired": {
+    color: "text-rose-600",
+    background: "bg-rose-100",
+  },
 }
 
 export default statusDetail;

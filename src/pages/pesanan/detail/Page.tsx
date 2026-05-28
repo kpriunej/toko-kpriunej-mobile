@@ -4,6 +4,7 @@ import {
   Pressable,
   RefreshControl,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -106,9 +107,11 @@ export default ({ navigation, route }: Props) => {
       <Header
         title={
           <>
-            <Pressable onPress={() => navigation.goBack()}>
-              <FontAwesome5Icon name="arrow-left" size={24} color="white" />
-            </Pressable>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <View pointerEvents="none">
+                <FontAwesome5Icon name="arrow-left" size={24} color="white" />
+              </View>
+            </TouchableOpacity>
             <Text className="ml-2 text-lg font-semibold text-white">DETAIL PESANAN</Text>
           </>
         }

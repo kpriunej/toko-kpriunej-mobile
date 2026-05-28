@@ -18,7 +18,7 @@ const ListFooter: React.FC<ListFooterProps> = ({
   fetchItem,
   currentPage 
 }) => (
-  <View className="pb-3 pt-1">
+  <View className="pb-3 pt-1 mb-4">
     {isLoadingMore ? (
       <RenderItem loading />
     ) : loadMoreError ? (
