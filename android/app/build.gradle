@@ -92,8 +92,8 @@ android {
         applicationId = "com.tokokpriunej"
         minSdk = rootProject.ext.minSdkVersion
         targetSdk = rootProject.ext.targetSdkVersion
-        versionCode = 2
-        versionName = "1.0.0"
+        versionCode = 3
+        versionName = "1.0.1"
         resValue "string", "build_config_package", "com.tokokpriunej"
     }
     signingConfigs {
