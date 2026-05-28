@@ -93,7 +93,7 @@ export default ({ total, cart, loadCart, clearCart }: FooterProps) => {
                 await clearCart();
   
                 Alert.alert('Alamdulillah', 'Pesanan berhasil dibuat!', [
-                  { text: 'OK', onPress: () => navigation.replace('DetailPesanan', {id_header: response.data.data.id_header}) },
+                  { text: 'OK', onPress: () => navigation.navigate('DetailPesanan', {id_header: response.data.data.id_header}) },
                 ])
               } else {
                 Alert.alert('Error', response.data?.message || 'Terjadi kesalahan saat melakukan pesanan. Silakan coba lagi.');
