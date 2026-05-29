@@ -1,4 +1,4 @@
-import { Alert, Image, ImageStyle, Pressable, Text, View } from "react-native";
+import { Alert, Image, ImageStyle, TouchableOpacity, Text, View } from "react-native";
 import TransaksiJualHeader from "../../../interfaces/TransaksiJualHeader";
 import TransaksiJualDetail from "../../../interfaces/TransaksiJualDetail";
 import { apiUrl, formatCurrency } from "../../../utils/helpers";
@@ -10,6 +10,7 @@ import { launchImageLibrary } from "react-native-image-picker";
 import { apiService } from "../../../services/api.services";
 import ImageView from "react-native-image-viewing";
 import { useState } from "react";
+import useAuth from "../../../hooks/useAuth";
 
 interface FooterProps {
   transaksiJualHeader: TransaksiJualHeader<TransaksiJualDetail>;
@@ -23,12 +24,16 @@ export const iconBank: ImageStyle = {
 };
 
 export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) => {
+  const { user } = useAuth();
   const tanggalBentukDate = new Date(transaksiJualHeader.created_at);
   const sisaWaktu = Countdown(new Date(tanggalBentukDate.setDate(tanggalBentukDate.getDate() + 1)));
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState({
     bukti_bayar: false,
-    batalkan: false
+    batalkan: false,
+    proses: false,
+    tolak: false,
+    kirim: false
   });
   
   const uploadBuktiBayarKeAPI = async (imageUri: string, fileName: string, fileType: string) => {
@@ -88,24 +93,23 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
     });
   };
 
-  const handleCancel = async () => {
+  const handleChangeStatus = async (title: string, status: string) => {
     Alert.alert(
-      "Batalkan Pesanan",
-      "Apakah kamu yakin ingin membatalkan pesanan ini?",
+      title,
+      `Apakah kamu yakin ingin ${title}?`,
       [
-        { text: "Batal", onPress: () => {}, style: "cancel" },
+        { text: "Batal", onPress: () => {} },
         {
-          text: "Batalkan Pesanan",
+          text: title,
           onPress: async () => {
-            await cancelPesanan();
+            await changeStatus(title, status);
           },
-          style: "destructive",
         },
       ]
     )
   }
 
-  const cancelPesanan = async () => {
+  const changeStatus = async (title: string, status: string) => {
     setIsLoading({...isLoading, batalkan: true});
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {bukti_bayar, ...data} = transaksiJualHeader;
@@ -113,15 +117,15 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
     const response = await apiService("post", apiUrl("/api/transaksi-jual-header"), {
       data: {
         ...data,
-        status: "Dibatalkan"
+        status: status
       }
     });
 
     if (response.status === 200) {
-      Alert.alert("Sukses", "Pesanan berhasil dibatalkan!");
+      Alert.alert("Alhamdulillah", `Berhasil ${title}`);
       setTransaksiJualHeader({...transaksiJualHeader, ...response.data.data});
     } else {
-      Alert.alert("Gagal", "Pesanan gagal dibatalkan!");
+      Alert.alert("Astaghfirullah", `Gagal ${title}`);
     }
 
     setIsLoading({...isLoading, batalkan: false}); 
@@ -134,6 +138,46 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
       "Nomor rekening berhasil disalin",
       [{ text: "OK", onPress: () => {} }]
     );
+  }
+
+  const adminHandle = () => {
+    if (transaksiJualHeader.status === "Menunggu Konfirmasi") {
+      return (
+        <View className="flex-row mt-4 gap-3">
+          <TouchableOpacity
+            onPress={() => handleChangeStatus("Proses Pesanan", "Diproses")} 
+            className="flex-1 rounded-2xl bg-green-700 px-5 py-4 items-center"
+          >
+            <Text className="font-semibold text-white">
+              {isLoading.proses ? "Sedang memproses..." : "Proses Pesanan"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleChangeStatus("Tolak Pesanan", "Ditolak")} 
+            className="flex-1 rounded-2xl bg-red-700 px-5 py-4 items-center"
+          >
+            <Text className="font-semibold text-white">
+              {isLoading.tolak ? "Sedang memproses..." : "Tolak Pesanan"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )
+    } else if (transaksiJualHeader.status === "Diproses") {
+      return (
+        <>
+          <TouchableOpacity
+            onPress={() => handleChangeStatus("Kirim Pesanan", "Dikirim")} 
+            className="mt-4 rounded-2xl bg-green-700 px-5 py-4 items-center"
+          >
+            <Text className="font-semibold text-white">
+              {isLoading.kirim ? "Sedang memproses..." : "Kirim Pesanan"}
+            </Text>
+          </TouchableOpacity>
+        </>
+      )
+    } else {
+      return null;
+    }
   }
 
   return (
@@ -164,13 +208,13 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
               <Text className="text-xl font-semibold text-sky-900 tracking-widest">
                 {mandiri}
               </Text>
-              <Pressable
+              <TouchableOpacity
                 onPress={handleCopy}
                 className="flex-row items-center gap-2"
               >
                 <FontAwesome5Icon name="copy" size={20} color="black" />
                 <Text className="font-semibold text-sky-900">Copy</Text>
-              </Pressable>
+              </TouchableOpacity>
             </View>
             <View className="mb-4"/>
           </View>
@@ -189,37 +233,38 @@ export default ({ transaksiJualHeader, setTransaksiJualHeader }: FooterProps) =>
         </Text>
         
         {transaksiJualHeader.bukti_bayar ? (
-          <Pressable
+          <TouchableOpacity
             onPress={() => setIsImageViewerOpen(true)}
-            className="mt-4 rounded-2xl bg-sky-700 px-5 py-4 items-center active:bg-sky-800"
+            className="mt-4 rounded-2xl bg-sky-700 px-5 py-4 items-center"
           >
             <Text className="font-semibold text-white">
               Lihat Bukti Bayar
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         ) : null}
         {["Menunggu Pembayaran"].includes(transaksiJualHeader.status) && (
           <>
             {transaksiJualHeader.status === "Menunggu Pembayaran" && (
-              <Pressable 
+              <TouchableOpacity 
                 onPress={handleBuktiBayar} 
-                className="mt-6 rounded-2xl bg-sky-700 px-5 py-4 items-center active:bg-sky-800"
+                className="mt-6 rounded-2xl bg-sky-700 px-5 py-4 items-center"
               >
                 <Text className="font-semibold text-white">
                   {isLoading.bukti_bayar ? "Sedang memproses..." : "Unggah Bukti Bayar"}
                 </Text>
-              </Pressable>
+              </TouchableOpacity>
             )}
-            <Pressable 
-              onPress={handleCancel} 
-              className="mt-4 rounded-2xl bg-red-700 px-5 py-4 items-center active:bg-red-800"
+            <TouchableOpacity 
+              onPress={() => handleChangeStatus("Membatalkan Pesanan", "Dibatalkan")} 
+              className="mt-4 rounded-2xl bg-red-700 px-5 py-4 items-center"
             >
               <Text className="font-semibold text-white">
                 {isLoading.batalkan ? "Sedang memproses..." : "Batalkan Pesanan"}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           </>
         )}
+        {user?.role === "Admin" && adminHandle()}
       </View>
       <ImageView
         images={[

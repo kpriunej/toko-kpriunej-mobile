@@ -2,15 +2,12 @@ import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
-  Image,
   Pressable,
   RefreshControl,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { apiUrl } from '../../utils/helpers';
 import { apiService } from '../../services/api.services';
 import Barang from '../../interfaces/Barang';
@@ -18,6 +15,8 @@ import ListFooter from '../../components/beranda/ListFooter';
 import ListEmpty from '../../components/beranda/ListEmpty';
 import RenderItem from '../../components/beranda/RenderItem';
 import { PaginatedResponse } from '../../interfaces';
+import SearchInput from '../../components/SearchInput';
+import Header from '../../components/Header';
 
 const isBarang = (value: unknown): value is Barang => {
   if (!value || typeof value !== 'object') {
@@ -83,15 +82,17 @@ export default () => {
       setLoadMoreError(null);
 
       try {
-        const params: any = { 
+        const params: Record<string, string | number | undefined> = { 
           page,
           per_page: 25,
           sort_by: "saldo_stock",
           sort_type: "desc",
         };
+
         if (searchQuery) {
           params['nama_barang:ilike'] = `%${searchQuery}%`;
         }
+
         const response = await apiService('get', apiUrl('/api/barang'), {
           params,
           cancelToken,
@@ -177,7 +178,6 @@ export default () => {
   }, [query, fetchBarang]);
 
   useEffect(() => {
-    FontAwesome5.loadFont?.();
     fetchBarang(1, { q: '' });
 
     return () => {
@@ -214,42 +214,23 @@ export default () => {
 
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
-      <View className="bg-sky-700 px-4 py-3 shadow-sm rounded-b-3xl">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-lg text-center font-bold text-white">TOKO ONLINE KPRI UNEJ</Text>
-          <Image
-            source={require('../../../assets/icons/logo.png')}
-            className="h-10 w-10 rounded-full bg-white"
-          />
-        </View>
-        <View className="flex-row items-center gap-2 mt-2 relative">
-          <TextInput
-            className="flex-1 h-10 py-0 rounded-2xl border border-sky-200 px-4 text-base text-slate-900 bg-white"
-            placeholder="Cari barang favorit kamu..."
-            placeholderTextColor="#6b7280"
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-          />
-          <FontAwesome5
-            name="search"
-            size={18}
-            color="#047857"
-            onPress={() => {
-              clearSearchDebounce();
-              if (searchCancelTokenRef.current) {
-                searchCancelTokenRef.current.cancel('Manual search started');
-              }
+      <Header title="TOKO ONLINE KPRI UNEJ">
+        <SearchInput
+          query={query}
+          setQuery={setQuery}
+          callback={() => {
+            clearSearchDebounce();
+            if (searchCancelTokenRef.current) {
+              searchCancelTokenRef.current.cancel('Manual search started');
+            }
 
-              const source = axios.CancelToken.source();
-              searchCancelTokenRef.current = source;
-              currentSearchQueryRef.current = query;
-              fetchBarang(1, { q: query, cancelToken: source.token });
-            }}
-            className="absolute right-5"
-          />
-        </View>
-      </View>
+            const source = axios.CancelToken.source();
+            searchCancelTokenRef.current = source;
+            currentSearchQueryRef.current = query;
+            fetchBarang(1, { q: query, cancelToken: source.token });
+          }}
+        />
+      </Header>
       <View className="flex-1 px-3">
         {isLoading ? (
           <View className="flex-col gap-4 mb-4">

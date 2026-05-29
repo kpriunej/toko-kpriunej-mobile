@@ -1,10 +1,11 @@
 import { Image, Text, View } from "react-native";
 
 interface HeaderProps {
-  title: string | React.ReactNode
+  title?: string | React.ReactNode
+  children?: string | React.ReactNode
 };
 
-export default ({ title }: HeaderProps) => {
+export default ({ title, children }: HeaderProps) => {
   return (
     <View className="bg-sky-700 px-4 py-3 shadow-sm rounded-b-3xl">
       <View className="flex-row items-center justify-between">
@@ -18,6 +19,7 @@ export default ({ title }: HeaderProps) => {
           className="h-10 w-10 rounded-full bg-white"
         />
       </View>
+      {children}
     </View>
   );
 }

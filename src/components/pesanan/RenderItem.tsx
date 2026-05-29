@@ -1,4 +1,4 @@
-import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { formatCurrency } from "../../utils/helpers";
 import moment from "moment";
 import TransaksiJualHeader from "../../interfaces/TransaksiJualHeader";
@@ -11,6 +11,7 @@ import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 import Countdown from "../../utils/Countdown";
 import { mandiri } from "../../constants/Rekening";
 import Clipboard from "@react-native-clipboard/clipboard";
+import useAuth from "../../hooks/useAuth";
 
 interface RenderCardProps {
   item?: TransaksiJualHeader<TransaksiJualDetail>;
@@ -19,6 +20,7 @@ interface RenderCardProps {
 
 const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pesanan'>>();
+  const { user } = useAuth();
 
   const handleCopy = async () => {
     Clipboard.setString(mandiri);
@@ -83,7 +85,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
         #INV-{item.nomor_faktur}
       </Text>
       <View className="flex-row items-center justify-between">
-        {item.status === "Menunggu Pembayaran" && (
+        {(item.status === "Menunggu Pembayaran" && item.id_user === user?.id) && (
           <View className="rounded-xl bg-sky-50 px-3 py-2">
             <Text className="text-xs text-amber-700">Transfer ke Mandiri</Text>
             <TouchableOpacity
@@ -99,6 +101,11 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
             </TouchableOpacity>
           </View>
         )}
+        {user?.role === "Admin" && (
+          <Text>
+            {item.nama_pelanggan}
+          </Text>
+        )}
         <View className="rounded-xl bg-sky-50 px-3 py-2">
           <Text className="text-xs text-amber-700">Grand Total</Text>
           <Text className="text-lg font-bold text-amber-900">
@@ -107,7 +114,7 @@ const RenderItem: React.FC<RenderCardProps> = ({ item, loading }) => {
         </View>
       </View>
 
-      {item.status === "Menunggu Pembayaran" && (
+      {(item.status === "Menunggu Pembayaran" && item.id_user === user?.id) && (
         <View className="flex-row items-center mt-3 gap-2">
           <FontAwesome5Icon name="exclamation-triangle" size={12} color="orange" />
           <Text className="text-sm font-semibold text-rose-600 animate-pulse">

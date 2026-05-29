@@ -27,6 +27,7 @@ export default ({ fetchItem }: Props) => {
       <FilterStatus fetchItem={fetchItem} status="Dikirim" />
       <FilterStatus fetchItem={fetchItem} status="Selesai" />
       <FilterStatus fetchItem={fetchItem} status="Dibatalkan" />
+      <FilterStatus fetchItem={fetchItem} status="EXPIRED" />
     </ScrollView>
   );
 }

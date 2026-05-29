@@ -29,9 +29,13 @@ const statusDetail: Record<string, StatusDetail> = {
     color: "text-rose-600",
     background: "bg-rose-100",
   },
-  "Expired": {
+  "Ditolak": {
     color: "text-rose-600",
     background: "bg-rose-100",
+  },
+  "EXPIRED": {
+    color: "text-white",
+    background: "bg-gray-600",
   },
 }
 

@@ -21,6 +21,8 @@ import TransaksiJualHeader from '../../interfaces/TransaksiJualHeader';
 import RootStackParamList from '../../interfaces/RootStackParamList';
 import TransaksiJualDetail from '../../interfaces/TransaksiJualDetail';
 import ListHeader from '../../components/pesanan/ListHeader';
+import SearchInput from '../../components/SearchInput';
+import axios, { CancelTokenSource } from 'axios';
 
 const isData = (value: unknown): value is TransaksiJualHeader<TransaksiJualDetail> => {
   if (!value || typeof value !== 'object') {
@@ -33,7 +35,9 @@ const isData = (value: unknown): value is TransaksiJualHeader<TransaksiJualDetai
 interface FetchOptions {
   isManualRefresh?: boolean;
   isLoadMore?: boolean;
-  status?: string
+  status?: string;
+  q?: string;
+  cancelToken?: CancelTokenSource['token'];
 }
 
 export const contentContainerStyle = { paddingBottom: 112 };
@@ -43,6 +47,7 @@ export default () => {
   const { user } = useAuth();
   
   // Menggunakan generic type pada state
+  const [query, setQuery] = useState<string>('');
   const [items, setItems] = useState<PaginatedResponse<TransaksiJualHeader<TransaksiJualDetail>>>({ data: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -50,10 +55,22 @@ export default () => {
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loadingMorePageRef = useRef<number | null>(null);
+  const searchDebounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchCancelTokenRef = useRef<CancelTokenSource | null>(null);
+  const currentSearchQueryRef = useRef<string>('');
+
+  const clearSearchDebounce = () => {
+    if (searchDebounceTimeoutRef.current) {
+      clearTimeout(searchDebounceTimeoutRef.current);
+      searchDebounceTimeoutRef.current = null;
+    }
+  };
 
   const fetchItem = useCallback(
     async (page = 1, options: FetchOptions = {}) => {
-      const { isManualRefresh = false, isLoadMore = false, status = "Semua" } = options;
+      const { isManualRefresh = false, isLoadMore = false, status = "Semua", q, cancelToken } = options;
+      const searchQuery = q !== undefined ? q : currentSearchQueryRef.current;
+
 
       // Pencegahan double-fetch
       if (isLoadMore && loadingMorePageRef.current === page) {
@@ -85,8 +102,15 @@ export default () => {
           per_page: 25,
           sort_by: "created_at",
           sort_type: "desc",
-          id_user: user?.id // Menambahkan opsional chaining demi keamanan
         };
+
+        if (searchQuery) {
+          params.q = `%${searchQuery}%`;
+        }
+
+        if (user && user?.role !== 'Admin') {
+          params.id_user = user.id;
+        }
 
         if (status !== "Semua") {
           params.status = status;
@@ -94,6 +118,7 @@ export default () => {
 
         const response = await apiService('get', apiUrl('/api/transaksi-jual-header'), {
           params,
+          cancelToken,
         });
 
         if (response?.canceled) {
@@ -152,8 +177,39 @@ export default () => {
         }
       }
     },
-    [user?.id], // Ditambahkan user.id agar fetchItem diperbarui jika user berganti
+    [user], // Ditambahkan user.id agar fetchItem diperbarui jika user berganti
   );
+
+  useEffect(() => {
+    if (query === currentSearchQueryRef.current) {
+      return;
+    }
+
+    clearSearchDebounce();
+    searchDebounceTimeoutRef.current = setTimeout(() => {
+      if (searchCancelTokenRef.current) {
+        searchCancelTokenRef.current.cancel('New search started');
+      }
+
+      const source = axios.CancelToken.source();
+      searchCancelTokenRef.current = source;
+      currentSearchQueryRef.current = query;
+      fetchItem(1, { q: query, cancelToken: source.token });
+    }, 500);
+
+    return clearSearchDebounce;
+  }, [query, fetchItem]);
+
+  useEffect(() => {
+    fetchItem(1, { q: '' });
+
+    return () => {
+      clearSearchDebounce();
+      if (searchCancelTokenRef.current) {
+        searchCancelTokenRef.current.cancel('Component unmounted');
+      }
+    };
+  }, [fetchItem]);
 
   const handleLoadMore = useCallback(() => {
     if (
@@ -168,6 +224,7 @@ export default () => {
 
     fetchItem(Number(items.current_page) + 1, {
       isLoadMore: true,
+      q: currentSearchQueryRef.current,
     });
   }, [
     items.current_page,
@@ -189,7 +246,24 @@ export default () => {
 
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
-      <Header title="RIWAYAT PESANAN" />
+      <Header title="RIWAYAT PESANAN">
+        <SearchInput
+          query={query}
+          setQuery={setQuery}
+          placeholder="Cari pesanan..."
+          callback={() => {
+            clearSearchDebounce();
+            if (searchCancelTokenRef.current) {
+              searchCancelTokenRef.current.cancel('Manual search started');
+            }
+
+            const source = axios.CancelToken.source();
+            searchCancelTokenRef.current = source;
+            currentSearchQueryRef.current = query;
+            fetchItem(1, { q: query, cancelToken: source.token });
+          }}
+        />
+      </Header>
       <View className="flex-1 px-3">
         {isLoading && !isRefreshing && !isLoadingMore ? (
           <View className="flex-col gap-3 mb-4">

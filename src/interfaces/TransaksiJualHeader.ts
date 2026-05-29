@@ -6,5 +6,6 @@ export default interface TransaksiJualHeader<TransaksiJualDetail> {
   tanggal_transaksi: string;
   nomor_faktur: string;
   transaksi_jual_detail?: TransaksiJualDetail[];
+  nama_pelanggan?: string;
   [key: string]: unknown;
 }
