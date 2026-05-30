@@ -17,6 +17,7 @@ import RenderItem from '../../components/beranda/RenderItem';
 import { PaginatedResponse } from '../../interfaces';
 import SearchInput from '../../components/SearchInput';
 import Header from '../../components/Header';
+import ListHeader from '../../components/beranda/ListHeader';
 
 const isBarang = (value: unknown): value is Barang => {
   if (!value || typeof value !== 'object') {
@@ -255,7 +256,7 @@ export default () => {
             data={items.data}
             keyExtractor={item => item.idtab.toString()}
             renderItem={({ item }) => <RenderItem item={item} />}
-            ListHeaderComponent={<View className="mt-4" />}
+            ListHeaderComponent={query === '' ? <ListHeader /> : <View className="mt-4"/>}
             ListEmptyComponent={<ListEmpty />}
             ListFooterComponent={
               <ListFooter
