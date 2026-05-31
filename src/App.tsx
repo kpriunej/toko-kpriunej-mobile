@@ -13,8 +13,16 @@ import AuthSession from './services/AuthSession';
 import RootStackParamList from './interfaces/RootStackParamList'; 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const linking = {
+  prefixes: ['tokokpriunej://'],
+  config: {
+    screens: {
+      Login: 'login',
+    },
+  },
+};
 
-function App() {
+export default () => {
   useEffect(() => {
     SplashScreen.hide();
   }, []);
@@ -23,7 +31,7 @@ function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <AuthSession>
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <Stack.Navigator>
               <Stack.Screen 
                 name="Main"
@@ -60,5 +68,3 @@ function App() {
     </Provider>
   );
 }
-
-export default App;

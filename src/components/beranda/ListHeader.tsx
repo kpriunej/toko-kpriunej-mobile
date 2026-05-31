@@ -2,7 +2,7 @@ import { Text, View } from 'react-native';
 
 export default () => (
   <View className="mt-3">
-    <View className="p-4 rounded-3xl bg-[#0069a8] mb-3">
+    <View className="p-4 rounded-3xl bg-sky-950 mb-3">
       <Text className="text-lg font-semibold text-slate-800 text-white">
         Selamat Datang! 👋
       </Text>

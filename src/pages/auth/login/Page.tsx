@@ -20,8 +20,9 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from '../../../components/auth/Header';
 import RootStackParamList from '../../../interfaces/RootStackParamList';
 
-export default () => {
+export default ({ route }: { route: any }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
+  const { verified } = route.params || {};
   const { user, setUser } = useAuth();
 
   const [loginInput, setLoginInput] = useState('');
@@ -30,6 +31,17 @@ export default () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    // Jika user masuk ke halaman ini membawa parameter verified bernilai 'true'
+    if (verified === 'true') {
+      Alert.alert(
+        "Email Terverifikasi!",
+        "Akun kamu sudah aktif. Silakan masukkan email dan password untuk login.",
+        [{ text: "OK" }]
+      );
+    }
+  }, [verified]);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -103,7 +115,7 @@ export default () => {
                     onChangeText={setLoginInput}
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    placeholder="Masukkan email atau nomor telepon"
+                    placeholder="Masukkan email"
                     placeholderTextColor="#94a3b8"
                     className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-base text-stone-900"
                   />

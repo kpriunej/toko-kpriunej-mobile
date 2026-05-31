@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Header from '../../components/Header';
 import RootStackParamList from '../../interfaces/RootStackParamList';
+import { useEffect } from 'react';
 
 export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Profil'>>();
@@ -15,6 +16,12 @@ export default () => {
     await AsyncStorage.removeItem('token');
     handleLogout();
   };
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigation.navigate('Login');
+    }
+  }, [isLoggedIn, navigation]);
 
   return (
     <SafeAreaView className="flex-1 bg-sky-50">
