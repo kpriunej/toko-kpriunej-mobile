@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuth from '../../hooks/useAuth';
@@ -12,6 +12,22 @@ export default () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Profil'>>();
   const { user, handleLogout } = useAuth();
   const isLoggedIn = Boolean(user);
+
+  const menuItems = [
+    {
+      "name": "Profil Saya",
+      "menu": "ProfilSaya"
+    },
+    {
+      "name": "Alamat Pengiriman",
+      "menu": "AlamatPengiriman"
+    },
+    {
+      "name": "Pengaturan Akun",
+      "menu": "PengaturanAkun"
+    }
+  ];
+
   const onLogoutPress = async () => {
     await AsyncStorage.removeItem('token');
     handleLogout();
@@ -19,7 +35,7 @@ export default () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigation.navigate('Login');
+      navigation.navigate('Login', { verified: 'false' });
     }
   }, [isLoggedIn, navigation]);
 
@@ -47,17 +63,18 @@ export default () => {
                   Email: {user?.email ?? 'Tidak tersedia'}
                 </Text>
                 <Text className="text-sm text-slate-700">
-                  Nomor Telepon: {user?.no_hp ?? 'Tidak tersedia'}`
+                  Nomor Telepon: {user?.no_hp ?? 'Tidak tersedia'}
                 </Text>
               </View>
               <View className='flex-col gap-3 mb'>
-                {['Profil Saya', 'Riwayat Pesanan', 'Pengaturan'].map(item => (
-                  <Pressable
-                    key={item}
+                {menuItems.map(item => (
+                  <TouchableOpacity
+                    key={item.menu}
                     className="rounded-2xl bg-white px-4 py-4 shadow"
+                    onPress={() => navigation.navigate(item.menu as any)}
                   >
-                    <Text className="text-base font-medium text-slate-800">{item}</Text>
-                  </Pressable>
+                    <Text className="text-base font-medium text-slate-800">{item.name}</Text>
+                  </TouchableOpacity>
                 ))}
               </View>
             </View>
@@ -65,7 +82,7 @@ export default () => {
 
           <Pressable
             onPress={isLoggedIn ? onLogoutPress : () => {
-              navigation.replace('Login');
+              navigation.replace('Login', { verified: 'false' });
             }}
             className={`mt-6 rounded-2xl ${isLoggedIn ? 'bg-red-700' : 'bg-sky-700'} px-4 py-4 items-center active:bg-sky-800`}
           >

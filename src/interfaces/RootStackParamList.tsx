@@ -8,6 +8,9 @@ type RootStackParamList = {
   Keranjang: undefined;
   Pesanan: undefined;
   Profil: undefined;
+  ProfilSaya: undefined;
+  AlamatPengiriman: undefined;
+  PengaturanAkun: undefined;
   Pembayaran: undefined;
   DetailPesanan: { id_header: number };
 }

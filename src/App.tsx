@@ -8,6 +8,9 @@ import LupaPasswordPage from './pages/auth/lupa-password/Page';
 import VerifyCodePage from './pages/auth/verify-code/Page';
 import ResetPasswordPage from './pages/auth/reset-password/Page';
 import PendaftaranPage from './pages/auth/pendaftaran/Page';
+import PengaturanAkunPage from './pages/profil/pengaturan-akun/Page';
+import ProfilSayaPage from './pages/profil/profil-saya/Page';
+import AlamatPengirimanPage from './pages/profil/alamat-pengiriman/Page';
 import DetailPesananPage from './pages/pesanan/detail/Page';
 import MainTabBar from './navigations/main/TabBar';
 import { useEffect } from 'react';
@@ -81,6 +84,27 @@ export default () => {
               <Stack.Screen 
                 name="Pendaftaran"
                 component={PendaftaranPage}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="PengaturanAkun"
+                component={PengaturanAkunPage}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="ProfilSaya"
+                component={ProfilSayaPage}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="AlamatPengiriman"
+                component={AlamatPengirimanPage}
                 options={{
                   headerShown: false
                 }}
