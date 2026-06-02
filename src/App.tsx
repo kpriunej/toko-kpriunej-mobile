@@ -3,9 +3,12 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './pages/auth/login/Page';
-import PendaftaranScreen from './pages/auth/pendaftaran/Page';
-import DetailPesananScreen from './pages/pesanan/detail/Page';
+import LoginPage from './pages/auth/login/Page';
+import LupaPasswordPage from './pages/auth/lupa-password/Page';
+import VerifyCodePage from './pages/auth/verify-code/Page';
+import ResetPasswordPage from './pages/auth/reset-password/Page';
+import PendaftaranPage from './pages/auth/pendaftaran/Page';
+import DetailPesananPage from './pages/pesanan/detail/Page';
 import MainTabBar from './navigations/main/TabBar';
 import { useEffect } from 'react';
 import SplashScreen from 'react-native-splash-screen';
@@ -42,21 +45,42 @@ export default () => {
               />
               <Stack.Screen 
                 name="DetailPesanan"
-                component={DetailPesananScreen}
+                component={DetailPesananPage}
                 options={{
                   headerShown: false
                 }}
               />
               <Stack.Screen 
                 name="Login"
-                component={LoginScreen}
+                component={LoginPage}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="LupaPassword"
+                component={LupaPasswordPage}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="VerifyCode"
+                component={VerifyCodePage}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen 
+                name="ResetPassword"
+                component={ResetPasswordPage}
                 options={{
                   headerShown: false
                 }}
               />
               <Stack.Screen 
                 name="Pendaftaran"
-                component={PendaftaranScreen}
+                component={PendaftaranPage}
                 options={{
                   headerShown: false
                 }}

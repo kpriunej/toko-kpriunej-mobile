@@ -96,7 +96,7 @@ export default ({ navigation, route }: Props) => {
   // Melakukan pengecekan auth & inisialisasi data secara aman
   useEffect(() => {
     if (!user) {
-      navigation.navigate('Login');
+      navigation.navigate('Login', { verified: 'false' });
       return;
     }
     fetchItem();
